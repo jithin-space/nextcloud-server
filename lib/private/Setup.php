@@ -283,7 +283,7 @@ class Setup {
 		$dbType = $options['dbtype'];
 
 		if (empty($options['adminlogin'])) {
-			$error[] = $l->t('Set an admin username.');
+			$error[] = $l->t('Set an admin account name.');
 		}
 		if (empty($options['adminpass'])) {
 			$error[] = $l->t('Set an admin password.');
@@ -389,7 +389,7 @@ class Setup {
 		try {
 			$user = \OC::$server->getUserManager()->createUser($username, $password);
 			if (!$user) {
-				$error[] = "User <$username> could not be created.";
+				$error[] = "Account <$username> could not be created.";
 			}
 		} catch (Exception $exception) {
 			$error[] = $exception->getMessage();
