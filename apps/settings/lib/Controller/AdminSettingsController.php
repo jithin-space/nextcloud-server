@@ -26,16 +26,20 @@
  */
 namespace OCA\Settings\Controller;
 
+use OC\AppFramework\Bootstrap\Coordinator;
 use OC\AppFramework\Middleware\Security\Exceptions\NotAdminException;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\IgnoreOpenAPI;
 use OCP\AppFramework\Http\TemplateResponse;
+use OCP\AppFramework\Services\IInitialState;
+use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Group\ISubAdmin;
 use OCP\IGroupManager;
 use OCP\INavigationManager;
 use OCP\IRequest;
 use OCP\IUser;
 use OCP\IUserSession;
+use OCP\Settings\IDeclarativeManager;
 use OCP\Settings\IManager as ISettingsManager;
 use OCP\Template;
 
@@ -50,7 +54,11 @@ class AdminSettingsController extends Controller {
 		ISettingsManager $settingsManager,
 		IUserSession $userSession,
 		IGroupManager $groupManager,
-		ISubAdmin $subAdmin
+		ISubAdmin $subAdmin,
+		Coordinator $coordinator,
+		IDeclarativeManager $declarativeSettingsManager,
+		IEventDispatcher $eventDispatcher,
+		IInitialState $initialState,
 	) {
 		parent::__construct($appName, $request);
 		$this->navigationManager = $navigationManager;
@@ -58,6 +66,8 @@ class AdminSettingsController extends Controller {
 		$this->userSession = $userSession;
 		$this->groupManager = $groupManager;
 		$this->subAdmin = $subAdmin;
+		$this->declarativeSettingsManager = $declarativeSettingsManager;
+		$this->initialState = $initialState;
 	}
 
 	/**

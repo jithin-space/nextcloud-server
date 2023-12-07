@@ -81,5 +81,7 @@ return [
 		['name' => 'WebAuthn#deleteRegistration', 'url' => '/settings/api/personal/webauthn/registration/{id}', 'verb' => 'DELETE' , 'root' => ''],
 
 		['name' => 'Reasons#getPdf', 'url' => '/settings/download/reasons', 'verb' => 'GET', 'root' => ''],
+
+		['name' => 'DeclarativeSettings#setValue', 'url' => '/settings/api/declarative', 'verb' => 'POST'],
 	]
 ];

@@ -26,17 +26,30 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 namespace OCA\Settings\Controller;
 
+use OC\AppFramework\Bootstrap\Coordinator;
+use OCA\Settings\AppInfo\Application;
 use OCP\AppFramework\Http\TemplateResponse;
+use OCP\AppFramework\Services\IInitialState;
+use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Group\ISubAdmin;
 use OCP\IGroupManager;
 use OCP\INavigationManager;
 use OCP\IUserSession;
+use OCP\Server;
+use OCP\Settings\IDeclarativeManager;
+use OCP\Settings\IDeclarativeSettingsForm;
 use OCP\Settings\IIconSection;
 use OCP\Settings\IManager as ISettingsManager;
 use OCP\Settings\ISettings;
+use OCP\Settings\RegisterDeclarativeSettingsFormEvent;
+use OCP\Util;
 
+/**
+ * @psalm-import-type DeclarativeSettingsFormField from IDeclarativeSettingsForm
+ */
 trait CommonSettingsTrait {
 
 	/** @var ISettingsManager */
@@ -54,22 +67,20 @@ trait CommonSettingsTrait {
 	/** @var ISubAdmin */
 	private $subAdmin;
 
+	private IDeclarativeManager $declarativeSettingsManager;
+
+	/** @var IInitialState */
+	private $initialState;
+
 	/**
 	 * @return array{forms: array{personal: array, admin: array}}
 	 */
 	private function getNavigationParameters(string $currentType, string $currentSection): array {
-		$templateParameters = [
-			'personal' => $this->formatPersonalSections($currentType, $currentSection),
-			'admin' => []
-		];
-
-		$templateParameters['admin'] = $this->formatAdminSections(
-			$currentType,
-			$currentSection
-		);
-
 		return [
-			'forms' => $templateParameters
+			'forms' => [
+				'personal' => $this->formatPersonalSections($currentType, $currentSection),
+				'admin' => $this->formatAdminSections($currentType, $currentSection),
+			],
 		];
 	}
 
@@ -87,7 +98,10 @@ trait CommonSettingsTrait {
 				} elseif ($type === 'personal') {
 					$settings = $this->settingsManager->getPersonalSettings($section->getID());
 				}
-				if (empty($settings) && !($section->getID() === 'additional' && count(\OC_App::getForms('admin')) > 0)) {
+
+				$declarativeFormIDs = $this->declarativeSettingsManager->getFormIDs($type, $section->getID());
+
+				if (empty($settings) && empty($declarativeFormIDs) && !($section->getID() === 'additional' && count(\OC_App::getForms('admin')) > 0)) {
 					continue;
 				}
 
@@ -107,14 +121,14 @@ trait CommonSettingsTrait {
 		return $templateParameters;
 	}
 
-	protected function formatPersonalSections(string $currentType, string $currentSections): array {
+	protected function formatPersonalSections(string $currentType, string $currentSection): array {
 		$sections = $this->settingsManager->getPersonalSections();
-		return $this->formatSections($sections, $currentSections, 'personal', $currentType);
+		return $this->formatSections($sections, $currentSection, 'personal', $currentType);
 	}
 
-	protected function formatAdminSections(string $currentType, string $currentSections): array {
+	protected function formatAdminSections(string $currentType, string $currentSection): array {
 		$sections = $this->settingsManager->getAdminSections();
-		return $this->formatSections($sections, $currentSections, 'admin', $currentType);
+		return $this->formatSections($sections, $currentSection, 'admin', $currentType);
 	}
 
 	/**
@@ -144,9 +158,21 @@ trait CommonSettingsTrait {
 			$this->navigationManager->setActiveEntry('admin_settings');
 		}
 
+		$this->declarativeSettingsManager->loadSchemas();
+
 		$templateParams = [];
 		$templateParams = array_merge($templateParams, $this->getNavigationParameters($type, $section));
 		$templateParams = array_merge($templateParams, $this->getSettings($section));
+
+		$declarativeFormIDs = $this->declarativeSettingsManager->getFormIDs($type, $section);
+		if (!empty($declarativeFormIDs)) {
+			foreach ($declarativeFormIDs as $app => $ids) {
+				$templateParams['content'] .= join(array_map(fn(string $id) => '<div id="' . $app . '_' . $id . '"></div>', $ids));
+			}
+			Util::addScript(Application::APP_ID, 'declarative-settings-forms');
+			$this->initialState->provideInitialState('declarative-settings-forms', $this->declarativeSettingsManager->getFormsWithValues($this->userSession->getUser(), $type, $section));
+		}
+
 		$activeSection = $this->settingsManager->getSection($type, $section);
 		if ($activeSection) {
 			$templateParams['pageTitle'] = $activeSection->getName();
