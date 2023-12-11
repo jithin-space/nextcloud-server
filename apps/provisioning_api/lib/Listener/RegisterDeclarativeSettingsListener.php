@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OCA\Provisioning_API\Listener;
 
-use OCA\Provisioning_API\DeclarativeSettingsForm;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
 use OCP\Settings\RegisterDeclarativeSettingsFormEvent;
@@ -23,6 +22,20 @@ class RegisterDeclarativeSettingsListener implements IEventListener {
 			return;
 		}
 
-		$event->registerSchema('provisioning_api', (new DeclarativeSettingsForm())->getSchema());
+		$event->registerSchema('provisioning_api', [
+			'id' => 'test_form2',
+			'priority' => 0,
+			'title' => 'Test form',
+			'section_type' => 'personal',
+			'section_id' => 'test_section',
+			'storage_type' => 'external',
+			'fields' => [
+				[
+					'id' => 'test_field2',
+					'title' => 'Test',
+					'type' => 'string',
+				],
+			],
+		]);
 	}
 }
