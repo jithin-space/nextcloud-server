@@ -51,6 +51,8 @@ namespace OCP\Settings;
  * @psalm-type DeclarativeSettingsFormSchema = array{
  *   id: string,
  *   priority: int,
+ *   title: string,
+ *   description?: string,
  *   storage_type?: DeclarativeSettingsStorageType,
  *   section_type: DeclarativeSettingsSectionType,
  *   section_id: string,
