@@ -61,6 +61,21 @@ class DeclarativeManager implements IDeclarativeManager {
 	 */
 	public function registerSchema(string $app, array $schema): void {
 		$this->appSchemas[$app] ??= [];
+
+
+		foreach ($this->appSchemas[$app] as $otherSchema) {
+			if ($otherSchema['id'] === $schema['id']) {
+				throw new Exception('Duplicate form IDs detected: ' . $schema['id']);
+			}
+		}
+
+		$fieldIDs = array_map(fn ($field) => $field['id'], $schema['fields']);
+		$otherFieldIDs = array_merge(...array_map(fn ($schema) => array_map(fn ($field) => $field['id'], $schema['fields']), $this->appSchemas[$app]));
+		$intersectionFieldIDs = array_intersect($fieldIDs, $otherFieldIDs);
+		if (count($intersectionFieldIDs) > 0) {
+			throw new Exception('Non unique field IDs detected: ' . join(', ', $intersectionFieldIDs));
+		}
+
 		$this->appSchemas[$app][] = $schema;
 	}
 
