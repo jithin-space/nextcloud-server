@@ -29,22 +29,18 @@
 
 namespace OCA\Settings\Controller;
 
-use OC\AppFramework\Bootstrap\Coordinator;
 use OCA\Settings\AppInfo\Application;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Services\IInitialState;
-use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Group\ISubAdmin;
 use OCP\IGroupManager;
 use OCP\INavigationManager;
 use OCP\IUserSession;
-use OCP\Server;
 use OCP\Settings\IDeclarativeManager;
 use OCP\Settings\IDeclarativeSettingsForm;
 use OCP\Settings\IIconSection;
 use OCP\Settings\IManager as ISettingsManager;
 use OCP\Settings\ISettings;
-use OCP\Settings\RegisterDeclarativeSettingsFormEvent;
 use OCP\Util;
 
 /**
@@ -167,7 +163,7 @@ trait CommonSettingsTrait {
 		$declarativeFormIDs = $this->declarativeSettingsManager->getFormIDs($type, $section);
 		if (!empty($declarativeFormIDs)) {
 			foreach ($declarativeFormIDs as $app => $ids) {
-				$templateParams['content'] .= join(array_map(fn(string $id) => '<div id="' . $app . '_' . $id . '"></div>', $ids));
+				$templateParams['content'] .= join(array_map(fn (string $id) => '<div id="' . $app . '_' . $id . '"></div>', $ids));
 			}
 			Util::addScript(Application::APP_ID, 'declarative-settings-forms');
 			$this->initialState->provideInitialState('declarative-settings-forms', $this->declarativeSettingsManager->getFormsWithValues($this->userSession->getUser(), $type, $section));

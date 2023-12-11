@@ -24,7 +24,7 @@
 namespace OCP\Settings;
 
 use Exception;
-use OCP\AppFramework\OCS\OCSForbiddenException;
+use OC\AppFramework\Middleware\Security\Exceptions\NotAdminException;
 use OCP\IUser;
 
 /**
@@ -76,7 +76,7 @@ interface IDeclarativeManager {
 	 * @param DeclarativeSettingsValueTypes $value
 	 *
 	 * @throws Exception
-	 * @throws OCSForbiddenException
+	 * @throws NotAdminException
 	 */
 	public function setValue(IUser $user, string $app, string $fieldId, mixed $value): void;
 }

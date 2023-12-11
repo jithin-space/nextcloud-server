@@ -25,7 +25,7 @@ namespace OC\Settings;
 
 use Exception;
 use OC\AppFramework\Bootstrap\Coordinator;
-use OCP\AppFramework\OCS\OCSForbiddenException;
+use OC\AppFramework\Middleware\Security\Exceptions\NotAdminException;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\IGroupManager;
 use OCP\IUser;
@@ -170,18 +170,18 @@ class DeclarativeManager implements IDeclarativeManager {
 
 	/**
 	 * @psalm-param DeclarativeSettingsSectionType $sectionType
-	 * @throws OCSForbiddenException
+	 * @throws NotAdminException
 	 */
 	private function assertAuthorized(IUser $user, string $sectionType): void {
 		if ($sectionType === 'admin' && !$this->groupManager->isAdmin($user->getUID())) {
-			throw new OCSForbiddenException('User "' . $user->getUID() . '" is not an admin');
+			throw new NotAdminException('Logged in user does not have permission to access these settings.');
 		}
 	}
 
 	/**
 	 * @return DeclarativeSettingsValueTypes
 	 * @throws Exception
-	 * @throws OCSForbiddenException
+	 * @throws NotAdminException
 	 */
 	private function getValue(IUser $user, string $app, string $fieldId): mixed {
 		$sectionType = $this->getSectionType($app, $fieldId);

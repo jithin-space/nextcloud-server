@@ -24,11 +24,12 @@
 namespace OCA\Settings\Controller;
 
 use Exception;
+use OC\AppFramework\Middleware\Security\Exceptions\NotAdminException;
+use OC\AppFramework\Middleware\Security\Exceptions\NotLoggedInException;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\OCS\OCSBadRequestException;
-use OCP\AppFramework\OCS\OCSForbiddenException;
 use OCP\AppFramework\OCSController;
 use OCP\IRequest;
 use OCP\IUserSession;
@@ -56,7 +57,8 @@ class DeclarativeSettingsController extends OCSController {
 	 * @param string $fieldId ID of the field
 	 * @param mixed $value Value to be saved
 	 * @return DataResponse<Http::STATUS_OK, null, array{}>
-	 * @throws OCSForbiddenException Not logged in or not an admin user
+	 * @throws NotLoggedInException Not logged in or not an admin user
+	 * @throws NotAdminException Not logged in or not an admin user
 	 * @throws OCSBadRequestException Invalid arguments to save value
 	 *
 	 * 200: Value set successfully
@@ -65,14 +67,14 @@ class DeclarativeSettingsController extends OCSController {
 	public function setValue(string $app, string $fieldId, mixed $value): DataResponse {
 		$user = $this->userSession->getUser();
 		if ($user === null) {
-			throw new OCSForbiddenException('Not logged in');
+			throw new NotLoggedInException();
 		}
 
 		try {
 			$this->declarativeManager->loadSchemas();
 			$this->declarativeManager->setValue($user, $app, $fieldId, $value);
 			return new DataResponse(null);
-		} catch (OCSForbiddenException $e) {
+		} catch (NotAdminException $e) {
 			throw $e;
 		} catch (Exception $e) {
 			$this->logger->error("Failed to set declarative settings value: " . $e->getMessage());

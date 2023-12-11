@@ -90,7 +90,8 @@ class AdminSettingsController extends Controller {
 		$user = $this->userSession->getUser();
 		$isSubAdmin = !$this->groupManager->isAdmin($user->getUID()) && $this->subAdmin->isSubAdmin($user);
 		$settings = $this->settingsManager->getAllowedAdminSettings($section, $user);
-		if (empty($settings)) {
+		$declarativeFormIDs = $this->declarativeSettingsManager->getFormIDs('admin', $section);
+		if (empty($settings) && empty($declarativeFormIDs)) {
 			throw new NotAdminException("Logged in user doesn't have permission to access these settings.");
 		}
 		$formatted = $this->formatSettings($settings);
