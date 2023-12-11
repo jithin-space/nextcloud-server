@@ -9,6 +9,7 @@ class DeclarativeSettingsForm implements IDeclarativeSettingsForm {
 		return [
 			'id' => 'test_form',
 			'priority' => 0,
+			'title' => 'Test form',
 			'section_type' => 'personal',
 			'section_id' => 'test_section',
 			'storage_type' => 'external',
