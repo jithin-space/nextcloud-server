@@ -17,7 +17,7 @@ class SetDeclarativeSettingsValueListener implements IEventListener {
 	}
 
 	public function handle(Event $event): void {
-		if (!($event instanceof SetDeclarativeSettingsValueEvent)) {
+		if (!($event instanceof SetDeclarativeSettingsValueEvent) || $event->getApp() !== "provisioning_api") {
 			// Unrelated
 			return;
 		}
