@@ -37,6 +37,22 @@
 				v-model="formField.value"
 				@input="(value) => updateFormFieldDataValue(value, formField, true)"/>
 		</NcSettingsSection>
+
+		<NcSettingsSection
+			v-for="formField in checkboxFormFields"
+			:key="formField.id"
+			:name="t('settings', formField.title)"
+			:description="sectionDescription(formField)">
+			<NcCheckboxRadioSwitch
+				class="declarative-form-field-checkbox"
+				:checked="Boolean(formField.value)"
+				@update:checked="(value) => {
+					formField.value = value
+					updateFormFieldDataValue(+value, formField, true)
+				}">
+				{{ t(formField.app, formField.label) }}
+			</NcCheckboxRadioSwitch>
+		</NcSettingsSection>
 	</div>
 </template>
 
@@ -49,7 +65,7 @@ import NcSettingsSection from '@nextcloud/vue/dist/Components/NcSettingsSection.
 import NcSettingsInputText from '@nextcloud/vue/dist/Components/NcSettingsInputText.js'
 import NcPasswordField from '@nextcloud/vue/dist/Components/NcPasswordField.js'
 import NcSelect from '@nextcloud/vue/dist/Components/NcSelect.js'
-import NcDateTimePicker from '@nextcloud/vue/dist/Components/NcDateTimePicker.js'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
 
 export default {
 	name: 'DeclarativeSection',
@@ -58,7 +74,7 @@ export default {
 		NcSettingsInputText,
 		NcPasswordField,
 		NcSelect,
-		NcDateTimePicker,
+		NcCheckboxRadioSwitch,
 	},
 	props: {
 		form: {
@@ -88,10 +104,16 @@ export default {
 		selectFormFields() {
 			return this.form.fields.filter(formField => formField.type === 'select')
 		},
+		checkboxFormFields() {
+			return this.form.fields.filter(formField => formField.type === 'bool')
+		},
 	},
 	methods: {
 		initFormFieldsData() {
 			this.form.fields.forEach((formField) => {
+				if (formField.type === 'bool') {
+					formField.value = +formField.value
+				}
 				this.formFieldsData[formField.id] = {
 					value: formField.value
 				}
@@ -125,7 +147,7 @@ export default {
 		}, 1000),
 
 		sectionDescription(formField) {
-			return Object.hasOwn(formField, 'description') ? t('settings', formField.description) : t('settings', '{appid} app declarative settings section', { appid: this.formApp })
+			return Object.hasOwn(formField, 'description') ? t(formField.app, formField.description) : t('settings', '{appid} app declarative settings section', { appid: this.formApp })
 		},
 	},
 }
