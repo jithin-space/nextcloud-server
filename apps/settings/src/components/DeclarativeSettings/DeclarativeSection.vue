@@ -1,59 +1,86 @@
 <template>
-	<div class="declarative-settings-section">
-		<NcSettingsSection
-			v-for="formField in textFormFields"
-			:key="formField.id"
-			:name="t('settings', formField.title)"
-			:description="sectionDescription(formField)">
-			<NcSettingsInputText
-				class="declarative-form-field-text"
-				:label="formField.title"
+	<NcSettingsSection
+		class="declarative-settings-section"
+		:name="t(form.app, form.title)"
+		:description="t(form.app, form.description)">
+		<div v-for="formField in textFormFields"
+			 :key="formField.id"
+			 class="declarative-form-field">
+			<label :for="formField.id + '_field'">{{ t(form.app, formField.title) }}</label>
+			<NcInputField
+				:type="formField.type"
+				:label-outside="true"
 				:value.sync="formFieldsData[formField.id].value"
 				@update:value="onChangeDebounced(formField)"
 				@submit="updateDeclarativeSettingsValue(formField)"/>
-		</NcSettingsSection>
+			<span class="hint">{{ formField.description }}</span>
+		</div>
 
-		<NcSettingsSection
-			v-for="formField in passwordFormFields"
-			:key="formField.id"
-			:name="t('settings', formField.title)"
-			:description="sectionDescription(formField)">
-			<NcPasswordField
-				class="declarative-form-field-password"
-				:label="formField.title"
-				:value.sync="formFieldsData[formField.id].value"
-				@update:value="onChangeDebounced(formField)"/>
-		</NcSettingsSection>
-
-		<NcSettingsSection
-			v-for="formField in selectFormFields"
-			:key="formField.id"
-			:name="t('settings', formField.title)"
-			:description="sectionDescription(formField)">
+		<div v-for="formField in selectFormFields"
+			 :key="formField.id"
+			 class="declarative-form-field">
+			<label :for="formField.id + '_field'">{{ t(form.app, formField.title) }}</label>
 			<NcSelect
-				class="declarative-form-field-select"
-				:label="formField.title"
+				:id="formField.id + '_field'"
 				:options="formField.options"
 				v-model="formField.value"
 				@input="(value) => updateFormFieldDataValue(value, formField, true)"/>
-		</NcSettingsSection>
+			<span class="hint">{{ formField.description }}</span>
+		</div>
 
-		<NcSettingsSection
-			v-for="formField in checkboxFormFields"
-			:key="formField.id"
-			:name="t('settings', formField.title)"
-			:description="sectionDescription(formField)">
+		<div v-for="formField in checkboxFormFields"
+			 :key="formField.id"
+			 class="declarative-form-field">
+			<div class="label-outside">
+				<label :for="formField.id + '_field'">{{ t(form.app, formField.title) }}</label>
+				<NcCheckboxRadioSwitch
+					:id="formField.id + '_field'"
+					:checked="Boolean(formField.value)"
+					@update:checked="(value) => {
+						formField.value = value
+						updateFormFieldDataValue(+value, formField, true)
+					}">
+					{{ t(formField.app, formField.label) }}
+				</NcCheckboxRadioSwitch>
+				<span class="hint">{{ formField.description }}</span>
+			</div>
+		</div>
+
+		<div v-for="formField in multiCheckboxFormFields"
+			 :key="formField.id"
+			 class="declarative-form-field declarative-form-field-multi_checkbox">
+			<label :for="formField.id + '_field'">{{ t(form.app, formField.title) }}</label>
 			<NcCheckboxRadioSwitch
-				class="declarative-form-field-checkbox"
-				:checked="Boolean(formField.value)"
+				v-for="option in formField.options"
+				:id="formField.id + '_field_' + option.value"
+				:key="option.value"
+				:checked.sync="formFieldsData[formField.id].value[option.value]"
 				@update:checked="(value) => {
-					formField.value = value
-					updateFormFieldDataValue(+value, formField, true)
+					formFieldsData[formField.id].value[option.value] = value
+					// Update without re-generating initial formFieldsData.value object as the link to components are lost
+					updateDeclarativeSettingsValue(formField, JSON.stringify(formFieldsData[formField.id].value))
 				}">
-				{{ t(formField.app, formField.label) }}
+				{{ t(formField.app, option.name) }}
 			</NcCheckboxRadioSwitch>
-		</NcSettingsSection>
-	</div>
+			<span class="hint">{{ formField.description }}</span>
+		</div>
+
+		<div v-for="formField in radioFormFields"
+			 :key="formField.id"
+			 class="declarative-form-field declarative-form-field-radio">
+			<label :for="formField.id + '_field'">{{ t(form.app, formField.title) }}</label>
+			<NcCheckboxRadioSwitch
+				v-for="option in formField.options"
+				:key="option.id"
+				:value="option.value"
+				type="radio"
+				:checked.sync="formField.value"
+				@update:checked="(value) => updateFormFieldDataValue(value, formField, true)">
+				{{ t(formField.app, option.name) }}
+			</NcCheckboxRadioSwitch>
+			<span class="hint">{{ formField.description }}</span>
+		</div>
+	</NcSettingsSection>
 </template>
 
 <script>
@@ -62,8 +89,7 @@ import { generateUrl } from '@nextcloud/router'
 import { showSuccess, showError } from '@nextcloud/dialogs'
 import debounce from 'debounce'
 import NcSettingsSection from '@nextcloud/vue/dist/Components/NcSettingsSection.js'
-import NcSettingsInputText from '@nextcloud/vue/dist/Components/NcSettingsInputText.js'
-import NcPasswordField from '@nextcloud/vue/dist/Components/NcPasswordField.js'
+import NcInputField from '@nextcloud/vue/dist/Components/NcInputField.js'
 import NcSelect from '@nextcloud/vue/dist/Components/NcSelect.js'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
 
@@ -71,8 +97,7 @@ export default {
 	name: 'DeclarativeSection',
 	components: {
 		NcSettingsSection,
-		NcSettingsInputText,
-		NcPasswordField,
+		NcInputField,
 		NcSelect,
 		NcCheckboxRadioSwitch,
 	},
@@ -96,16 +121,19 @@ export default {
 			return this.form.app || ''
 		},
 		textFormFields() {
-			return this.form.fields.filter(formField => formField.type === 'string')
-		},
-		passwordFormFields() {
-			return this.form.fields.filter(formField => formField.type === 'password')
+			return this.form.fields.filter(formField => ['text', 'password', 'email', 'tel', 'url', 'search', 'number'].includes(formField.type))
 		},
 		selectFormFields() {
 			return this.form.fields.filter(formField => formField.type === 'select')
 		},
+		radioFormFields() {
+			return this.form.fields.filter(formField => formField.type === 'radio')
+		},
 		checkboxFormFields() {
-			return this.form.fields.filter(formField => formField.type === 'bool')
+			return this.form.fields.filter(formField => formField.type === 'checkbox')
+		},
+		multiCheckboxFormFields() {
+			return this.form.fields.filter(formField => formField.type === 'multi-checkbox')
 		},
 	},
 	methods: {
@@ -113,6 +141,23 @@ export default {
 			this.form.fields.forEach((formField) => {
 				if (formField.type === 'bool') {
 					formField.value = +formField.value
+				}
+				if (formField.type === 'multi-checkbox') {
+					if (formField.value === '') {
+						// Init formFieldsData with splitted options
+						formField.value = {}
+						formField.options.forEach(option => {
+							formField.value[option.value] = false
+						})
+					} else {
+						formField.value = JSON.parse(formField.value)
+						// Merge possible new options
+						formField.options.forEach(option => {
+							if (!formField.value.hasOwnProperty(option.value)) {
+								formField.value[option.value] = false
+							}
+						})
+					}
 				}
 				this.formFieldsData[formField.id] = {
 					value: formField.value
@@ -127,11 +172,11 @@ export default {
 			}
 		},
 
-		updateDeclarativeSettingsValue(formField) {
-			axios.post(generateUrl('settings/api/declarative'), {
+		updateDeclarativeSettingsValue(formField, value = null) {
+			return axios.post(generateUrl('settings/api/declarative'), {
 				app: this.formApp,
 				fieldId: formField.id,
-				value: this.formFieldsData[formField.id].value,
+				value: value === null ? this.formFieldsData[formField.id].value : value,
 			}).then(res => {
 				if (res.status === 200) {
 					showSuccess(t('settings', 'Declarative setting updated'))
@@ -145,10 +190,40 @@ export default {
 		onChangeDebounced: debounce(function(formField) {
 			this.updateDeclarativeSettingsValue(formField)
 		}, 1000),
-
-		sectionDescription(formField) {
-			return Object.hasOwn(formField, 'description') ? t(formField.app, formField.description) : t('settings', '{appid} app declarative settings section', { appid: this.formApp })
-		},
 	},
 }
 </script>
+
+<style lang="scss" scoped>
+.declarative-form-field {
+	margin: 20px 0;
+	padding: 10px 0;
+	border-bottom: 1px solid var(--color-border-dark);
+
+	&:last-child {
+		border-bottom: none;
+	}
+
+	.label-outside {
+		display: flex;
+		align-items: center;
+
+		& > label {
+			padding-top: 7px;
+			padding-right: 14px;
+			white-space: nowrap;
+		}
+	}
+
+	.hint {
+		color: var(--color-text-maxcontrast);
+		margin-left: 8px;
+		padding-top: 5px;
+	}
+
+	&-radio, &-multi_checkbox {
+		max-height: 300px;
+		overflow-y: auto;
+	}
+}
+</style>
