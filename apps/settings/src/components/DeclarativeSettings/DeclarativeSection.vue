@@ -1,12 +1,13 @@
 <template>
 	<NcSettingsSection
 		class="declarative-settings-section"
-		:name="t(form.app, form.title)"
-		:description="t(form.app, form.description)"
+		:name="form.title"
+		:description="form.description"
 		:doc-url="form.doc_url || ''">
 		<div v-for="formField in formFields"
 			 :key="formField.id"
 			 class="declarative-form-field"
+			:aria-label="t('settings', '{app} declarative setting field: {name}', { app: form.app, name: formField.title })"
 			:class="{
 				'declarative-form-field-text': isTextFormFields(formField),
 				'declarative-form-field-select': formField.type === 'select',
@@ -16,34 +17,34 @@
 			}">
 
 			<template v-if="isTextFormFields(formField)">
-				<label :for="formField.id + '_field'">{{ t(form.app, formField.title) }}</label>
+				<label :for="formField.id + '_field'">{{ formField.title }}</label>
 				<NcInputField
 					:type="formField.type"
 					:label-outside="true"
 					:value.sync="formFieldsData[formField.id].value"
-					:placeholder="t(form.app, formField.placeholder)"
+					:placeholder="formField.placeholder"
 					@update:value="onChangeDebounced(formField)"
 					@submit="updateDeclarativeSettingsValue(formField)"/>
 				<span class="hint">{{ formField.description }}</span>
 			</template>
 
 			<template v-if="formField.type === 'select'">
-				<label :for="formField.id + '_field'">{{ t(form.app, formField.title) }}</label>
+				<label :for="formField.id + '_field'">{{ formField.title }}</label>
 				<NcSelect
 					:id="formField.id + '_field'"
 					:options="formField.options"
-					:placeholder="t(form.app, formField.placeholder)"
+					:placeholder="formField.placeholder"
 					v-model="formField.value"
 					@input="(value) => updateFormFieldDataValue(value, formField, true)"/>
 				<span class="hint">{{ formField.description }}</span>
 			</template>
 
 			<template v-if="formField.type === 'multi-select'">
-				<label :for="formField.id + '_field'">{{ t(form.app, formField.title) }}</label>
+				<label :for="formField.id + '_field'">{{ formField.title }}</label>
 				<NcSelect
 					:id="formField.id + '_field'"
 					:options="formField.options"
-					:placeholder="t(form.app, formField.placeholder)"
+					:placeholder="formField.placeholder"
 					:multiple="true"
 					v-model="formField.value"
 					@input="(value) => {
@@ -56,7 +57,7 @@
 
 			<template v-if="formField.type === 'checkbox'">
 				<div class="label-outside">
-					<label :for="formField.id + '_field'">{{ t(form.app, formField.title) }}</label>
+					<label :for="formField.id + '_field'">{{ formField.title }}</label>
 					<NcCheckboxRadioSwitch
 						:id="formField.id + '_field'"
 						:checked="Boolean(formField.value)"
@@ -65,14 +66,14 @@
 							updateFormFieldDataValue(+value, formField, true)
 						}
 					">
-						{{ t(formField.app, formField.label) }}
+						{{ formField.label }}
 					</NcCheckboxRadioSwitch>
-					<span class="hint">{{ t(form.app, formField.description) }}</span>
+					<span class="hint">{{ formField.description }}</span>
 				</div>
 			</template>
 
 			<template v-if="formField.type === 'multi-checkbox'">
-				<label :for="formField.id + '_field'">{{ t(form.app, formField.title) }}</label>
+				<label :for="formField.id + '_field'">{{ formField.title }}</label>
 				<NcCheckboxRadioSwitch
 					v-for="option in formField.options"
 					:id="formField.id + '_field_' + option.value"
@@ -84,13 +85,13 @@
 						updateDeclarativeSettingsValue(formField, JSON.stringify(formFieldsData[formField.id].value))
 					}
 				">
-					{{ t(formField.app, option.name) }}
+					{{ option.name }}
 				</NcCheckboxRadioSwitch>
 				<span class="hint">{{ formField.description }}</span>
 			</template>
 
 			<template v-if="formField.type === 'radio'">
-				<label :for="formField.id + '_field'">{{ t(form.app, formField.title) }}</label>
+				<label :for="formField.id + '_field'">{{ formField.title }}</label>
 				<NcCheckboxRadioSwitch
 					v-for="option in formField.options"
 					:key="option.value"
@@ -98,7 +99,7 @@
 					type="radio"
 					:checked.sync="formField.value"
 					@update:checked="(value) => updateFormFieldDataValue(value, formField, true)">
-					{{ t(formField.app, option.name) }}
+					{{ option.name }}
 				</NcCheckboxRadioSwitch>
 				<span class="hint">{{ formField.description }}</span>
 			</template>
@@ -128,7 +129,6 @@ export default {
 		form: {
 			type: Object,
 			required: true,
-			default: () => t('settings', 'Declarative settings form not found'),
 		},
 	},
 	data() {
@@ -154,21 +154,21 @@ export default {
 		initFormFieldsData() {
 			this.form.fields.forEach((formField) => {
 				if (formField.type === 'bool') {
-					formField.value = +formField.value
+					this.$set(formField, 'value', +formField.value)
 				}
 				if (formField.type === 'multi-checkbox') {
 					if (formField.value === '') {
 						// Init formFieldsData from options
-						formField.value = {}
+						this.$set(formField, 'value', {})
 						formField.options.forEach(option => {
-							formField.value[option.value] = false
+							this.$set(formField.value, option.value, false)
 						})
 					} else {
-						formField.value = JSON.parse(formField.value)
+						this.$set(formField, 'value', JSON.parse(formField.value))
 						// Merge possible new options
 						formField.options.forEach(option => {
 							if (!formField.value.hasOwnProperty(option.value)) {
-								formField.value[option.value] = false
+								this.$set(formField.value, option.value, false)
 							}
 						})
 						// Remove options that are not in the form anymore
@@ -182,17 +182,15 @@ export default {
 				if (formField.type === 'multi-select') {
 					if (formField.value === '') {
 						// Init empty array for multi-select
-						formField.value = []
+						this.$set(formField, 'value', [])
 					} else {
 						// JSON decode an array of multiple values set
-						formField.value = JSON.parse(formField.value)
+						this.$set(formField, 'value', JSON.parse(formField.value))
 					}
 				}
-				this.formFieldsData[formField.id] = {
-					value: formField.value
-				}
-				// TODO: Fix the case when the formField.value object is not bound to the components to be updated on change
-				console.debug('formField.value: ', formField.value)
+				this.$set(this.formFieldsData, formField.id, {
+					value: formField.value,
+				})
 			})
 		},
 
