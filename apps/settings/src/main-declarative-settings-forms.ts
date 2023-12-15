@@ -6,6 +6,7 @@ import DeclarativeSection from './components/DeclarativeSettings/DeclarativeSect
 interface DeclarativeFormField {
 	id: string,
 	title: string,
+	description: string,
 	type: string,
 	options: Array<any>|null,
 	value: any,
@@ -14,10 +15,14 @@ interface DeclarativeFormField {
 
 interface DeclarativeForm {
 	id: number,
-	app: string,
 	priority: number,
 	section_type: string,
+	section_id: string,
 	storage_type: string,
+	title: string,
+	description: string,
+	doc_url: string,
+	app: string,
 	fields: Array<DeclarativeFormField>,
 }
 
