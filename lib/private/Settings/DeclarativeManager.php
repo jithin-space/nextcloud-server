@@ -37,6 +37,7 @@ use OCP\Settings\IDeclarativeManager;
 use OCP\Settings\IDeclarativeSettingsForm;
 use OCP\Settings\RegisterDeclarativeSettingsFormEvent;
 use OCP\Settings\SetDeclarativeSettingsValueEvent;
+use Psr\Log\LoggerInterface;
 
 /**
  * @psalm-import-type DeclarativeSettingsValueTypes from IDeclarativeSettingsForm
@@ -51,6 +52,7 @@ class DeclarativeManager implements IDeclarativeManager {
 		private IGroupManager $groupManager,
 		private Coordinator $coordinator,
 		private IConfig $config,
+		private LoggerInterface $logger,
 	) {
 	}
 
@@ -79,7 +81,9 @@ class DeclarativeManager implements IDeclarativeManager {
 			throw new Exception('Non unique field IDs detected: ' . join(', ', $intersectionFieldIDs));
 		}
 
-		$this->appSchemas[$app][] = $schema;
+		if ($this->validateSchema($app, $schema)) {
+			$this->appSchemas[$app][] = $schema;
+		}
 	}
 
 	/**
@@ -281,5 +285,99 @@ class DeclarativeManager implements IDeclarativeManager {
 			}
 		}
 		return null;
+	}
+
+	private function validateSchema(string $appId, array $schema): bool {
+		if (!isset($schema['id'])) {
+			$this->logger->warning('Attempt to register a declarative settings schema with no id', ['app' => $appId]);
+			return false;
+		}
+		$formId = $schema['id'];
+		if (!isset($schema['section_type'])) {
+			$this->logger->warning('Declarative settings: missing section_type', ['app' => $appId, 'form_id' => $formId]);
+			return false;
+		}
+		if (!in_array($schema['section_type'], [DeclarativeSettingsTypes::SECTION_TYPE_ADMIN, DeclarativeSettingsTypes::SECTION_TYPE_PERSONAL])) {
+			$this->logger->warning('Declarative settings: invalid section_type', ['app' => $appId, 'form_id' => $formId, 'section_type' => $schema['section_type']]);
+			return false;
+		}
+		if (!isset($schema['section_id'])) {
+			$this->logger->warning('Declarative settings: missing section_id', ['app' => $appId, 'form_id' => $formId]);
+			return false;
+		}
+		if (!isset($schema['storage_type'])) {
+			$this->logger->warning('Declarative settings: missing storage_type', ['app' => $appId, 'form_id' => $formId]);
+			return false;
+		}
+		if (!in_array($schema['storage_type'], [DeclarativeSettingsTypes::STORAGE_TYPE_EXTERNAL, DeclarativeSettingsTypes::STORAGE_TYPE_INTERNAL])) {
+			$this->logger->warning('Declarative settings: invalid storage_type', ['app' => $appId, 'form_id' => $formId, 'storage_type' => $schema['storage_type']]);
+			return false;
+		}
+		if (!isset($schema['title'])) {
+			$this->logger->warning('Declarative settings: missing title', ['app' => $appId, 'form_id' => $formId]);
+			return false;
+		}
+		if (!isset($schema['fields']) || !is_array($schema['fields'])) {
+			$this->logger->warning('Declarative settings: missing or invalid fields', ['app' => $appId, 'form_id' => $formId]);
+			return false;
+		}
+		foreach ($schema['fields'] as $field) {
+			if (!isset($field['id'])) {
+				$this->logger->warning('Declarative settings: missing field id', ['app' => $appId, 'form_id' => $formId, 'field' => $field]);
+				return false;
+			}
+			$fieldId = $field['id'];
+			if (!isset($field['title'])) {
+				$this->logger->warning('Declarative settings: missing field title', ['app' => $appId, 'form_id' => $formId, 'field_id' => $fieldId]);
+				return false;
+			}
+			if (!isset($field['type'])) {
+				$this->logger->warning('Declarative settings: missing field type', ['app' => $appId, 'form_id' => $formId, 'field_id' => $fieldId]);
+				return false;
+			}
+			if (!in_array($field['type'], [
+				DeclarativeSettingsTypes::MULTI_SELECT, DeclarativeSettingsTypes::MULTI_CHECKBOX, DeclarativeSettingsTypes::RADIO,
+				DeclarativeSettingsTypes::SELECT, DeclarativeSettingsTypes::CHECKBOX,
+				DeclarativeSettingsTypes::URL, DeclarativeSettingsTypes::EMAIL, DeclarativeSettingsTypes::NUMBER,
+				DeclarativeSettingsTypes::TEL, DeclarativeSettingsTypes::TEXT, DeclarativeSettingsTypes::PASSWORD,
+			])) {
+				$this->logger->warning('Declarative settings: invalid field type', [
+					'app' => $appId, 'form_id' => $formId, 'field_id' => $fieldId, 'type' => $field['type'],
+				]);
+				return false;
+			}
+			if (!$this->validateField($appId, $formId, $field)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private function validateField(string $appId, string $formId, array $field): bool {
+		$fieldId = $field['id'];
+		if (in_array($field['type'], [
+				DeclarativeSettingsTypes::MULTI_SELECT, DeclarativeSettingsTypes::MULTI_CHECKBOX, DeclarativeSettingsTypes::RADIO,
+				DeclarativeSettingsTypes::SELECT
+		])) {
+			if (!isset($field['options'])) {
+				$this->logger->warning('Declarative settings: missing field options', ['app' => $appId, 'form_id' => $formId, 'field_id' => $fieldId]);
+				return false;
+			}
+			if (!is_array($field['options'])) {
+				$this->logger->warning('Declarative settings: field options should be an array', ['app' => $appId, 'form_id' => $formId, 'field_id' => $fieldId]);
+				return false;
+			}
+		}
+		if (!in_array($field['type'], [
+			DeclarativeSettingsTypes::MULTI_CHECKBOX, DeclarativeSettingsTypes::RADIO,
+			DeclarativeSettingsTypes::SELECT, DeclarativeSettingsTypes::CHECKBOX,
+		])) {
+			if (!isset($field['placeholder'])) {
+				$this->logger->warning('Declarative settings: missing field placeholder', ['app' => $appId, 'form_id' => $formId, 'field_id' => $fieldId]);
+				return false;
+			}
+		}
+		return true;
 	}
 }
