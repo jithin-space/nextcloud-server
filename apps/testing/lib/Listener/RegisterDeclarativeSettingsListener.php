@@ -6,6 +6,7 @@ namespace OCA\Testing\Listener;
 
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
+use OCP\Settings\DeclarativeSettingsTypes;
 use OCP\Settings\RegisterDeclarativeSettingsFormEvent;
 
 /**
@@ -25,9 +26,9 @@ class RegisterDeclarativeSettingsListener implements IEventListener {
 		$event->registerSchema('testing', [
 			'id' => 'test_declarative_form_event',
 			'priority' => 10,
-			'section_type' => 'admin',
+			'section_type' => DeclarativeSettingsTypes::SECTION_TYPE_ADMIN,
 			'section_id' => 'additional',
-			'storage_type' => 'external',
+			'storage_type' => DeclarativeSettingsTypes::STORAGE_TYPE_INTERNAL,
 			'title' => 'Test declarative settings event', // NcSettingsSection name
 			'description' => 'This form is registered via the RegisterDeclarativeSettingsFormEvent', // NcSettingsSection description
 			'fields' => [
@@ -35,14 +36,17 @@ class RegisterDeclarativeSettingsListener implements IEventListener {
 					'id' => 'event_field_1',
 					'title' => 'Why is 42 this answer to all questions?',
 					'description' => 'Hint: It\'s not',
-					'type' => 'text',
+					'type' => DeclarativeSettingsTypes::TEXT,
+					'placeholder' => 'Enter your answer',
+					'default' => 'Because it is',
 				],
 				[
 					'id' => 'feature_rating',
 					'title' => 'How would you rate this feature?',
 					'description' => 'Your vote is not anonymous',
-					'type' => 'radio', // radio, radio-button (NcCheckboxRadioSwitch button-variant)
+					'type' => DeclarativeSettingsTypes::RADIO, // radio, radio-button (NcCheckboxRadioSwitch button-variant)
 					'label' => 'Select single toggle',
+					'default' => '3',
 					'options' => [
 						[
 							'name' => 'Awesome', // NcCheckboxRadioSwitch display name

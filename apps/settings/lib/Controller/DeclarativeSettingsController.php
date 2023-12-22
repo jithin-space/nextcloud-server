@@ -54,6 +54,7 @@ class DeclarativeSettingsController extends OCSController {
 	 * Sets a declarative settings value
 	 *
 	 * @param string $app ID of the app
+	 * @param string $formId ID of the form
 	 * @param string $fieldId ID of the field
 	 * @param mixed $value Value to be saved
 	 * @return DataResponse<Http::STATUS_OK, null, array{}>
@@ -64,7 +65,7 @@ class DeclarativeSettingsController extends OCSController {
 	 * 200: Value set successfully
 	 */
 	#[NoAdminRequired]
-	public function setValue(string $app, string $fieldId, mixed $value): DataResponse {
+	public function setValue(string $app, string $formId, string $fieldId, mixed $value): DataResponse {
 		$user = $this->userSession->getUser();
 		if ($user === null) {
 			throw new NotLoggedInException();
@@ -72,7 +73,7 @@ class DeclarativeSettingsController extends OCSController {
 
 		try {
 			$this->declarativeManager->loadSchemas();
-			$this->declarativeManager->setValue($user, $app, $fieldId, $value);
+			$this->declarativeManager->setValue($user, $app, $formId, $fieldId, $value);
 			return new DataResponse(null);
 		} catch (NotAdminException $e) {
 			throw $e;

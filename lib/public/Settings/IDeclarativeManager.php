@@ -78,5 +78,5 @@ interface IDeclarativeManager {
 	 * @throws Exception
 	 * @throws NotAdminException
 	 */
-	public function setValue(IUser $user, string $app, string $fieldId, mixed $value): void;
+	public function setValue(IUser $user, string $app, string $formId, string $fieldId, mixed $value): void;
 }

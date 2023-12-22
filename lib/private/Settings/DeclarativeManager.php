@@ -27,9 +27,11 @@ use Exception;
 use OC\AppFramework\Bootstrap\Coordinator;
 use OC\AppFramework\Middleware\Security\Exceptions\NotAdminException;
 use OCP\EventDispatcher\IEventDispatcher;
+use OCP\IConfig;
 use OCP\IGroupManager;
 use OCP\IUser;
 use OCP\Server;
+use OCP\Settings\DeclarativeSettingsTypes;
 use OCP\Settings\GetDeclarativeSettingsValueEvent;
 use OCP\Settings\IDeclarativeManager;
 use OCP\Settings\IDeclarativeSettingsForm;
@@ -48,6 +50,7 @@ class DeclarativeManager implements IDeclarativeManager {
 		private IEventDispatcher $eventDispatcher,
 		private IGroupManager $groupManager,
 		private Coordinator $coordinator,
+		private IConfig $config,
 	) {
 	}
 
@@ -130,7 +133,7 @@ class DeclarativeManager implements IDeclarativeManager {
 					$s['app'] = $app;
 
 					foreach ($s['fields'] as &$field) {
-						$field['value'] = $this->getValue($user, $app, $field['id']);
+						$field['value'] = $this->getValue($user, $app, $schema['id'], $field['id']);
 					}
 
 					/** @var DeclarativeSettingsFormSchemaWithValues $s */
@@ -162,7 +165,7 @@ class DeclarativeManager implements IDeclarativeManager {
 			}
 		}
 
-		return 'db';
+		return DeclarativeSettingsTypes::STORAGE_TYPE_INTERNAL;
 	}
 
 	/**
@@ -198,19 +201,18 @@ class DeclarativeManager implements IDeclarativeManager {
 	 * @throws Exception
 	 * @throws NotAdminException
 	 */
-	private function getValue(IUser $user, string $app, string $fieldId): mixed {
+	private function getValue(IUser $user, string $app, string $formId, string $fieldId): mixed {
 		$sectionType = $this->getSectionType($app, $fieldId);
 		$this->assertAuthorized($user, $sectionType);
 
 		$storageType = $this->getStorageType($app, $fieldId);
 		switch ($storageType) {
-			case 'external':
-				$event = new GetDeclarativeSettingsValueEvent($user, $app, $fieldId);
+			case DeclarativeSettingsTypes::STORAGE_TYPE_EXTERNAL:
+				$event = new GetDeclarativeSettingsValueEvent($user, $app, $formId, $fieldId);
 				$this->eventDispatcher->dispatchTyped($event);
 				return $event->getValue();
-			case 'db':
-				// TODO
-				return 'TODO';
+			case DeclarativeSettingsTypes::STORAGE_TYPE_INTERNAL:
+				return $this->getInternalValue($user, $app, $formId, $fieldId);
 			default:
 				throw new Exception('Unknown storage type "' . $storageType . '"');
 		}
@@ -219,20 +221,65 @@ class DeclarativeManager implements IDeclarativeManager {
 	/**
 	 * @inheritdoc
 	 */
-	public function setValue(IUser $user, string $app, string $fieldId, mixed $value): void {
+	public function setValue(IUser $user, string $app, string $formId, string $fieldId, mixed $value): void {
 		$sectionType = $this->getSectionType($app, $fieldId);
 		$this->assertAuthorized($user, $sectionType);
 
 		$storageType = $this->getStorageType($app, $fieldId);
 		switch ($storageType) {
-			case 'external':
-				$this->eventDispatcher->dispatchTyped(new SetDeclarativeSettingsValueEvent($user, $app, $fieldId, $value));
+			case DeclarativeSettingsTypes::STORAGE_TYPE_EXTERNAL:
+				$this->eventDispatcher->dispatchTyped(new SetDeclarativeSettingsValueEvent($user, $app, $formId, $fieldId, $value));
 				break;
-			case 'db':
-				// TODO
+			case DeclarativeSettingsTypes::STORAGE_TYPE_INTERNAL:
+				$this->saveInternalValue($user, $app, $formId, $fieldId, $value);
 				break;
 			default:
 				throw new Exception('Unknown storage type "' . $storageType . '"');
 		}
+	}
+
+	private function getInternalValue(IUser $user, string $app, string $formId, string $fieldId): mixed {
+		$sectionType = $this->getSectionType($app, $fieldId);
+		$defaultValue = $this->getDefaultValue($app, $formId, $fieldId);
+		switch ($sectionType) {
+			case DeclarativeSettingsTypes::SECTION_TYPE_ADMIN:
+				return $this->config->getAppValue($app, $fieldId, $defaultValue);
+			case DeclarativeSettingsTypes::SECTION_TYPE_PERSONAL:
+				return $this->config->getUserValue($user->getUID(), $app, $fieldId, $defaultValue);
+			default:
+				throw new Exception('Unknown section type "' . $sectionType . '"');
+		}
+	}
+
+	private function saveInternalValue(IUser $user, string $app, string $formId, string $fieldId, mixed $value): void {
+		$sectionType = $this->getSectionType($app, $fieldId);
+		switch ($sectionType) {
+			case DeclarativeSettingsTypes::SECTION_TYPE_ADMIN:
+				$this->config->setAppValue($app, $fieldId, $value);
+				break;
+			case DeclarativeSettingsTypes::SECTION_TYPE_PERSONAL:
+				$this->config->setUserValue($user->getUID(), $app, $fieldId, $value);
+				break;
+			default:
+				throw new Exception('Unknown section type "' . $sectionType . '"');
+		}
+	}
+
+	private function getDefaultValue(string $app, string $formId, string $fieldId): mixed {
+		foreach ($this->appSchemas[$app] as $schema) {
+			if ($schema['id'] === $formId) {
+				foreach ($schema['fields'] as $field) {
+					if ($field['id'] === $fieldId) {
+						if (isset($field['default'])) {
+							if (is_array($field['default']) || is_numeric($field['default'])) {
+								return json_encode($field['default']);
+							}
+							return $field['default'];
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 }

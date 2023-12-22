@@ -16,6 +16,7 @@ class SetDeclarativeSettingsValueEvent extends Event {
 	public function __construct(
 		private IUser $user,
 		private string $app,
+		private string $formId,
 		private string $fieldId,
 		private mixed $value,
 	) {
@@ -28,6 +29,10 @@ class SetDeclarativeSettingsValueEvent extends Event {
 
 	public function getApp(): string {
 		return $this->app;
+	}
+
+	public function getFormId(): string {
+		return $this->formId;
 	}
 
 	public function getFieldId(): string {

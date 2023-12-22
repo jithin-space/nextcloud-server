@@ -204,6 +204,7 @@ export default {
 		updateDeclarativeSettingsValue(formField, value = null) {
 			return axios.post(generateUrl('settings/api/declarative'), {
 				app: this.formApp,
+				formId: this.form.id,
 				fieldId: formField.id,
 				value: value === null ? this.formFieldsData[formField.id].value : value,
 			}).then(res => {

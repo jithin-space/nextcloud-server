@@ -172,6 +172,7 @@ __webpack_require__.r(__webpack_exports__);
       let value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       return _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].post((0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('settings/api/declarative'), {
         app: this.formApp,
+        formId: this.form.id,
         fieldId: formField.id,
         value: value === null ? this.formFieldsData[formField.id].value : value
       }).then(res => {
@@ -915,4 +916,4 @@ module.exports = "data:image/svg+xml;base64,PCEtLSBUaGlzIGljb24gaXMgcGFydCBvZiBN
 /******/ 	
 /******/ })()
 ;
-//# sourceMappingURL=settings-declarative-settings-forms.js.map?v=981cefe8ce9dbd087f18
+//# sourceMappingURL=settings-declarative-settings-forms.js.map?v=fd068ea72cd553c801c8
