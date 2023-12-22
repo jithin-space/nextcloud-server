@@ -30,10 +30,6 @@ namespace OCA\Provisioning_API\AppInfo;
 
 use OC\Group\Manager as GroupManager;
 use OCA\Provisioning_API\Capabilities;
-use OCA\Provisioning_API\DeclarativeSettingsForm;
-use OCA\Provisioning_API\Listener\GetDeclarativeSettingsValueListener;
-use OCA\Provisioning_API\Listener\RegisterDeclarativeSettingsListener;
-use OCA\Provisioning_API\Listener\SetDeclarativeSettingsValueListener;
 use OCA\Provisioning_API\Listener\UserDeletedListener;
 use OCA\Provisioning_API\Middleware\ProvisioningApiMiddleware;
 use OCA\Settings\Mailer\NewUserMailHelper;
@@ -53,9 +49,6 @@ use OCP\L10N\IFactory;
 use OCP\Mail\IMailer;
 use OCP\Security\ICrypto;
 use OCP\Security\ISecureRandom;
-use OCP\Settings\GetDeclarativeSettingsValueEvent;
-use OCP\Settings\RegisterDeclarativeSettingsFormEvent;
-use OCP\Settings\SetDeclarativeSettingsValueEvent;
 use OCP\User\Events\UserDeletedEvent;
 use OCP\Util;
 use Psr\Container\ContainerInterface;
@@ -101,11 +94,6 @@ class Application extends App implements IBootstrap {
 		});
 		$context->registerMiddleware(ProvisioningApiMiddleware::class);
 		$context->registerCapability(Capabilities::class);
-
-		$context->registerDeclarativeSettings(DeclarativeSettingsForm::class);
-		$context->registerEventListener(RegisterDeclarativeSettingsFormEvent::class, RegisterDeclarativeSettingsListener::class);
-		$context->registerEventListener(GetDeclarativeSettingsValueEvent::class, GetDeclarativeSettingsValueListener::class);
-		$context->registerEventListener(SetDeclarativeSettingsValueEvent::class, SetDeclarativeSettingsValueListener::class);
 	}
 
 	public function boot(IBootContext $context): void {

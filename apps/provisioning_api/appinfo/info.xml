@@ -28,7 +28,4 @@
 	<dependencies>
 		<nextcloud min-version="29" max-version="29"/>
 	</dependencies>
-	<settings>
-		<personal-section>OCA\Provisioning_API\TestSection</personal-section>
-	</settings>
 </info>
