@@ -67,6 +67,9 @@ class DeclarativeManager implements IDeclarativeManager {
 	public function registerSchema(string $app, array $schema): void {
 		$this->appSchemas[$app] ??= [];
 
+		if (!$this->validateSchema($app, $schema)) {
+			throw new Exception('Invalid schema. Please check the logs for more details.');
+		}
 
 		foreach ($this->appSchemas[$app] as $otherSchema) {
 			if ($otherSchema['id'] === $schema['id']) {
@@ -81,9 +84,7 @@ class DeclarativeManager implements IDeclarativeManager {
 			throw new Exception('Non unique field IDs detected: ' . join(', ', $intersectionFieldIDs));
 		}
 
-		if ($this->validateSchema($app, $schema)) {
-			$this->appSchemas[$app][] = $schema;
-		}
+		$this->appSchemas[$app][] = $schema;
 	}
 
 	/**
@@ -235,7 +236,7 @@ class DeclarativeManager implements IDeclarativeManager {
 				$this->eventDispatcher->dispatchTyped(new SetDeclarativeSettingsValueEvent($user, $app, $formId, $fieldId, $value));
 				break;
 			case DeclarativeSettingsTypes::STORAGE_TYPE_INTERNAL:
-				$this->saveInternalValue($user, $app, $formId, $fieldId, $value);
+				$this->saveInternalValue($user, $app, $fieldId, $value);
 				break;
 			default:
 				throw new Exception('Unknown storage type "' . $storageType . '"');
@@ -255,7 +256,7 @@ class DeclarativeManager implements IDeclarativeManager {
 		}
 	}
 
-	private function saveInternalValue(IUser $user, string $app, string $formId, string $fieldId, mixed $value): void {
+	private function saveInternalValue(IUser $user, string $app, string $fieldId, mixed $value): void {
 		$sectionType = $this->getSectionType($app, $fieldId);
 		switch ($sectionType) {
 			case DeclarativeSettingsTypes::SECTION_TYPE_ADMIN:
