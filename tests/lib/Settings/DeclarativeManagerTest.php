@@ -32,6 +32,7 @@ use OCP\IGroupManager;
 use OCP\IUser;
 use OCP\Settings\DeclarativeSettingsTypes;
 use OCP\Settings\IDeclarativeManager;
+use OCP\Settings\SetDeclarativeSettingsValueEvent;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use Test\TestCase;
@@ -497,6 +498,33 @@ class DeclarativeManagerTest extends TestCase {
 		// Check some_real_setting field default value
 		$someRealSettingField = array_values(array_filter(array_filter($forms, fn ($form) => $form['id'] === $schema['id'])[0]['fields'], fn ($field) => $field['id'] === 'some_real_setting'))[0];
 		$this->assertEquals('120m', $someRealSettingField['value']);
+	}
+
+	public function testSetExternalValue(): void {
+		$app = 'testing';
+		$schema = self::validSchemaAllFields;
+		// Change storage_type to external and section_type to personal
+		$schema['storage_type'] = DeclarativeSettingsTypes::STORAGE_TYPE_EXTERNAL;
+		$schema['section_type'] = DeclarativeSettingsTypes::SECTION_TYPE_PERSONAL;
+		$this->declarativeManager->registerSchema($app, $schema);
+
+		$user = $this->createMock(IUser::class);
+		$user->expects($this->any())
+			->method('getUID')
+			->willReturn('test_user');
+
+		$setDeclarativeSettingsValueEvent = new SetDeclarativeSettingsValueEvent(
+			$user,
+			$app,
+			$schema['id'],
+			'some_real_setting',
+			'120m'
+		);
+
+		$this->eventDispatcher->expects($this->once())
+			->method('dispatchTyped')
+			->with($setDeclarativeSettingsValueEvent);
+		$this->declarativeManager->setValue($user, $app, $schema['id'], 'some_real_setting', '120m');
 	}
 
 	public function testAdminFormUserUnauthorized(): void {
