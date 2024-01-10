@@ -116,13 +116,6 @@ final class DeclarativeSettingsTypes {
 	public const CHECKBOX = 'checkbox';
 
 	/**
-	 * DeclarativeSettings field type CHECKBOX attributes
-	 *
-	 * @since 29.0.0
-	 */
-	public const CHECKBOX_ATTRIBUTES = ['id', 'title', 'description', 'type', 'label', 'default'];
-
-	/**
 	 * Multiple NcCheckboxRadioSwitch type checkbox representing a one config value (saved as JSON object)
 	 *
 	 * @since 29.0.0
