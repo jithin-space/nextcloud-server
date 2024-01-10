@@ -29,6 +29,7 @@ namespace OC\Core\Controller;
 
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\IgnoreOpenAPI;
+use OCP\AppFramework\Http\Attribute\Route;
 use OCP\AppFramework\Http\Response;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IRequest;
@@ -46,6 +47,7 @@ class UnsupportedBrowserController extends Controller {
 	 *
 	 * @return Response
 	 */
+	#[Route(Route::TYPE_INDEX, verb: 'GET', url: 'unsupported')]
 	public function index(): Response {
 		Util::addScript('core', 'unsupported-browser');
 		Util::addStyle('core', 'icons');

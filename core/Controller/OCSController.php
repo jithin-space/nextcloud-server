@@ -32,6 +32,7 @@ use OC\CapabilitiesManager;
 use OC\Security\IdentityProof\Manager;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\IgnoreOpenAPI;
+use OCP\AppFramework\Http\Attribute\Route;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use OCP\IUserManager;
@@ -53,6 +54,7 @@ class OCSController extends \OCP\AppFramework\OCSController {
 	 * @PublicPage
 	 */
 	#[IgnoreOpenAPI]
+	#[Route(Route::TYPE_OCS, verb: 'GET', url: '/config', root: '')]
 	public function getConfig(): DataResponse {
 		$data = [
 			'version' => '1.7',
@@ -74,6 +76,7 @@ class OCSController extends \OCP\AppFramework\OCSController {
 	 *
 	 * 200: Capabilities returned
 	 */
+	#[Route(Route::TYPE_OCS, verb: 'GET', url: '/capabilities', root: '/cloud')]
 	public function getCapabilities(): DataResponse {
 		$result = [];
 		[$major, $minor, $micro] = \OCP\Util::getVersion();
@@ -102,6 +105,7 @@ class OCSController extends \OCP\AppFramework\OCSController {
 	 * @BruteForceProtection(action=login)
 	 */
 	#[IgnoreOpenAPI]
+	#[Route(Route::TYPE_OCS, verb: 'POST', url: '/check', root: '/person')]
 	public function personCheck(string $login = '', string $password = ''): DataResponse {
 		if ($login !== '' && $password !== '') {
 			if ($this->userManager->checkPassword($login, $password)) {
@@ -123,6 +127,7 @@ class OCSController extends \OCP\AppFramework\OCSController {
 	 * @PublicPage
 	 */
 	#[IgnoreOpenAPI]
+	#[Route(Route::TYPE_OCS, verb: 'GET', url: '/key/{cloudId}', root: '/identityproof')]
 	public function getIdentityProof(string $cloudId): DataResponse {
 		$userObject = $this->userManager->get($cloudId);
 

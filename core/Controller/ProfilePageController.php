@@ -30,6 +30,7 @@ namespace OC\Core\Controller;
 use OC\Profile\ProfileManager;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\IgnoreOpenAPI;
+use OCP\AppFramework\Http\Attribute\Route;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Services\IInitialState;
 use OCP\EventDispatcher\IEventDispatcher;
@@ -65,6 +66,7 @@ class ProfilePageController extends Controller {
 	 * @NoAdminRequired
 	 * @NoSubAdminRequired
 	 */
+	#[Route(Route::TYPE_INDEX, verb: 'GET', url: '/u/{targetUserId}')]
 	public function index(string $targetUserId): TemplateResponse {
 		$profileNotFoundTemplate = new TemplateResponse(
 			'core',

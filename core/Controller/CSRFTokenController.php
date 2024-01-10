@@ -31,6 +31,7 @@ use OC\Security\CSRF\CsrfTokenManager;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\IgnoreOpenAPI;
+use OCP\AppFramework\Http\Attribute\Route;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
 
@@ -49,6 +50,7 @@ class CSRFTokenController extends Controller {
 	 * @NoCSRFRequired
 	 * @PublicPage
 	 */
+	#[Route(Route::TYPE_INDEX, verb: 'GET', url: '/csrftoken')]
 	public function index(): JSONResponse {
 		if (!$this->request->passesStrictCookieCheck()) {
 			return new JSONResponse([], Http::STATUS_FORBIDDEN);

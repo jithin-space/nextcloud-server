@@ -33,6 +33,7 @@ use OC\Authentication\WebAuthn\Manager;
 use OC\URLGenerator;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attribute\Route;
 use OCP\AppFramework\Http\Attribute\UseSession;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
@@ -62,6 +63,7 @@ class WebAuthnController extends Controller {
 	 * @PublicPage
 	 */
 	#[UseSession]
+	#[Route(Route::TYPE_INDEX, verb: 'POST', url: 'login/webauthn/start')]
 	public function startAuthentication(string $loginName): JSONResponse {
 		$this->logger->debug('Starting WebAuthn login');
 
@@ -86,6 +88,7 @@ class WebAuthnController extends Controller {
 	 * @PublicPage
 	 */
 	#[UseSession]
+	#[Route(Route::TYPE_INDEX, verb: 'POST', url: 'login/webauthn/finish')]
 	public function finishAuthentication(string $data): JSONResponse {
 		$this->logger->debug('Validating WebAuthn login');
 

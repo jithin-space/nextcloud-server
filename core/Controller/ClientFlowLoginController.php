@@ -42,6 +42,7 @@ use OCA\OAuth2\Db\ClientMapper;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\IgnoreOpenAPI;
+use OCP\AppFramework\Http\Attribute\Route;
 use OCP\AppFramework\Http\Attribute\UseSession;
 use OCP\AppFramework\Http\Response;
 use OCP\AppFramework\Http\StandaloneTemplateResponse;
@@ -113,6 +114,7 @@ class ClientFlowLoginController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	#[UseSession]
+	#[Route(Route::TYPE_INDEX, verb: 'GET', url: '/login/flow')]
 	public function showAuthPickerPage(string $clientIdentifier = '', string $user = '', int $direct = 0): StandaloneTemplateResponse {
 		$clientName = $this->getClientName();
 		$client = null;
@@ -180,6 +182,7 @@ class ClientFlowLoginController extends Controller {
 	 * @NoSameSiteCookieRequired
 	 */
 	#[UseSession]
+	#[Route(Route::TYPE_INDEX, verb: 'GET', url: '/login/flow/grant')]
 	public function grantPage(string $stateToken = '',
 		string $clientIdentifier = '',
 		int $direct = 0): StandaloneTemplateResponse {
@@ -232,6 +235,7 @@ class ClientFlowLoginController extends Controller {
 	 * @return Http\RedirectResponse|Response
 	 */
 	#[UseSession]
+	#[Route(Route::TYPE_INDEX, verb: 'POST', url: '/login/flow')]
 	public function generateAppPassword(string $stateToken,
 		string $clientIdentifier = '') {
 		if (!$this->isValidToken($stateToken)) {
@@ -323,6 +327,7 @@ class ClientFlowLoginController extends Controller {
 	/**
 	 * @PublicPage
 	 */
+	#[Route(Route::TYPE_INDEX, verb: 'POST', url: '/login/flow/apptoken')]
 	public function apptokenRedirect(string $stateToken, string $user, string $password): Response {
 		if (!$this->isValidToken($stateToken)) {
 			return $this->stateTokenForbiddenResponse();

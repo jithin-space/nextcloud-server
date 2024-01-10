@@ -35,6 +35,7 @@ use OC\Files\AppData\Factory;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\IgnoreOpenAPI;
+use OCP\AppFramework\Http\Attribute\Route;
 use OCP\AppFramework\Http\FileDisplayResponse;
 use OCP\AppFramework\Http\NotFoundResponse;
 use OCP\AppFramework\Http\Response;
@@ -69,6 +70,7 @@ class JsController extends Controller {
 	 * @param string $appName js folder name
 	 * @return FileDisplayResponse|NotFoundResponse
 	 */
+	#[Route(Route::TYPE_INDEX, verb: 'GET', url: '/js/{appName}/{fileName}')]
 	public function getJs(string $fileName, string $appName): Response {
 		try {
 			$folder = $this->appData->getFolder($appName);

@@ -28,6 +28,7 @@ namespace OC\Core\Controller;
 
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\IgnoreOpenAPI;
+use OCP\AppFramework\Http\Attribute\Route;
 use OCP\AppFramework\Http\Response;
 use OCP\AppFramework\Http\StandaloneTemplateResponse;
 use OCP\IInitialStateService;
@@ -48,6 +49,7 @@ class RecommendedAppsController extends Controller {
 	 * @NoCSRFRequired
 	 * @return Response
 	 */
+	#[Route(Route::TYPE_INDEX, verb: 'GET', url: '/core/apps/recommended')]
 	public function index(): Response {
 		$defaultPageUrl = $this->urlGenerator->linkToDefaultPageUrl();
 		$this->initialStateService->provideInitialState('core', 'defaultPageUrl', $defaultPageUrl);

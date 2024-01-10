@@ -30,6 +30,7 @@ use OC\Http\WellKnown\RequestManager;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\IgnoreOpenAPI;
+use OCP\AppFramework\Http\Attribute\Route;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\Response;
 use OCP\IRequest;
@@ -49,6 +50,7 @@ class WellKnownController extends Controller {
 	 *
 	 * @return Response
 	 */
+	#[Route(Route::TYPE_INDEX, verb: 'GET', url: '.well-known/{service}')]
 	public function handle(string $service): Response {
 		$response = $this->requestManager->process(
 			$service,
