@@ -11,65 +11,69 @@
 			:class="{
 				'declarative-form-field-text': isTextFormFields(formField),
 				'declarative-form-field-select': formField.type === 'select',
+				'declarative-form-field-multi-select': formField.type === 'multi-select',
 				'declarative-form-field-checkbox': formField.type === 'checkbox',
 				'declarative-form-field-multi_checkbox': formField.type === 'multi-checkbox',
-				'declarative-form-field-radio': formField.type === 'radio',
+				'declarative-form-field-radio': formField.type === 'radio'
 			}">
 
 			<template v-if="isTextFormFields(formField)">
-				<label :for="formField.id + '_field'">{{ formField.title }}</label>
-				<NcInputField
-					:type="formField.type"
-					:label-outside="true"
-					:value.sync="formFieldsData[formField.id].value"
-					:placeholder="formField.placeholder"
-					@update:value="onChangeDebounced(formField)"
-					@submit="updateDeclarativeSettingsValue(formField)"/>
+				<div class="input-wrapper">
+					<NcInputField
+						:type="formField.type"
+						:label="formField.title"
+						:value.sync="formFieldsData[formField.id].value"
+						:placeholder="formField.placeholder"
+						@update:value="onChangeDebounced(formField)"
+						@submit="updateDeclarativeSettingsValue(formField)"/>
+				</div>
 				<span class="hint">{{ formField.description }}</span>
 			</template>
 
 			<template v-if="formField.type === 'select'">
 				<label :for="formField.id + '_field'">{{ formField.title }}</label>
-				<NcSelect
-					:id="formField.id + '_field'"
-					:options="formField.options"
-					:placeholder="formField.placeholder"
-					v-model="formField.value"
-					@input="(value) => updateFormFieldDataValue(value, formField, true)"/>
+				<div class="input-wrapper">
+					<NcSelect
+						:id="formField.id + '_field'"
+						:options="formField.options"
+						:placeholder="formField.placeholder"
+						v-model="formField.value"
+						@input="(value) => updateFormFieldDataValue(value, formField, true)"/>
+				</div>
 				<span class="hint">{{ formField.description }}</span>
 			</template>
 
 			<template v-if="formField.type === 'multi-select'">
 				<label :for="formField.id + '_field'">{{ formField.title }}</label>
-				<NcSelect
-					:id="formField.id + '_field'"
-					:options="formField.options"
-					:placeholder="formField.placeholder"
-					:multiple="true"
-					v-model="formField.value"
-					@input="(value) => {
+				<div class="input-wrapper">
+					<NcSelect
+						:id="formField.id + '_field'"
+						:options="formField.options"
+						:placeholder="formField.placeholder"
+						:multiple="true"
+						v-model="formField.value"
+						@input="(value) => {
 						formFieldsData[formField.id].value = value
 						updateDeclarativeSettingsValue(formField, JSON.stringify(formFieldsData[formField.id].value))
 					}
 				"/>
+				</div>
 				<span class="hint">{{ formField.description }}</span>
 			</template>
 
 			<template v-if="formField.type === 'checkbox'">
-				<div class="label-outside">
-					<label :for="formField.id + '_field'">{{ formField.title }}</label>
-					<NcCheckboxRadioSwitch
-						:id="formField.id + '_field'"
-						:checked="Boolean(formField.value)"
-						@update:checked="(value) => {
-							formField.value = value
-							updateFormFieldDataValue(+value, formField, true)
-						}
-					">
-						{{ formField.label }}
-					</NcCheckboxRadioSwitch>
-					<span class="hint">{{ formField.description }}</span>
-				</div>
+				<label :for="formField.id + '_field'">{{ formField.title }}</label>
+				<NcCheckboxRadioSwitch
+					:id="formField.id + '_field'"
+					:checked="Boolean(formField.value)"
+					@update:checked="(value) => {
+						formField.value = value
+						updateFormFieldDataValue(+value, formField, true)
+					}
+				">
+					{{ formField.label }}
+				</NcCheckboxRadioSwitch>
+				<span class="hint">{{ formField.description }}</span>
 			</template>
 
 			<template v-if="formField.type === 'multi-checkbox'">
@@ -228,24 +232,18 @@ export default {
 .declarative-form-field {
 	margin: 20px 0;
 	padding: 10px 0;
-	border-bottom: 1px solid var(--color-border-dark);
+
+	.input-wrapper {
+		width: 100%;
+		max-width: 400px;
+	}
 
 	&:last-child {
 		border-bottom: none;
 	}
 
-	.label-outside {
-		display: flex;
-		align-items: center;
-
-		& > label {
-			padding-top: 7px;
-			padding-right: 14px;
-			white-space: nowrap;
-		}
-	}
-
 	.hint {
+		display: inline-block;
 		color: var(--color-text-maxcontrast);
 		margin-left: 8px;
 		padding-top: 5px;
@@ -254,6 +252,15 @@ export default {
 	&-radio, &-multi_checkbox {
 		max-height: 250px;
 		overflow-y: auto;
+	}
+
+	&-multi-select, &-select {
+		display: flex;
+		flex-direction: column;
+
+		label {
+			margin-bottom: 5px;
+		}
 	}
 }
 </style>
