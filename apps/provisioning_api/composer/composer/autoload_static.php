@@ -7,14 +7,14 @@ namespace Composer\Autoload;
 class ComposerStaticInitProvisioning_API
 {
     public static $prefixLengthsPsr4 = array (
-        'O' => 
+        'O' =>
         array (
             'OCA\\Provisioning_API\\' => 21,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'OCA\\Provisioning_API\\' => 
+        'OCA\\Provisioning_API\\' =>
         array (
             0 => __DIR__ . '/..' . '/../lib',
         ),
@@ -31,16 +31,11 @@ class ComposerStaticInitProvisioning_API
         'OCA\\Provisioning_API\\Controller\\PreferencesController' => __DIR__ . '/..' . '/../lib/Controller/PreferencesController.php',
         'OCA\\Provisioning_API\\Controller\\UsersController' => __DIR__ . '/..' . '/../lib/Controller/UsersController.php',
         'OCA\\Provisioning_API\\Controller\\VerificationController' => __DIR__ . '/..' . '/../lib/Controller/VerificationController.php',
-        'OCA\\Provisioning_API\\DeclarativeSettingsForm' => __DIR__ . '/..' . '/../lib/DeclarativeSettingsForm.php',
         'OCA\\Provisioning_API\\FederatedShareProviderFactory' => __DIR__ . '/..' . '/../lib/FederatedShareProviderFactory.php',
-        'OCA\\Provisioning_API\\Listener\\GetDeclarativeSettingsValueListener' => __DIR__ . '/..' . '/../lib/Listener/GetDeclarativeSettingsValueListener.php',
-        'OCA\\Provisioning_API\\Listener\\RegisterDeclarativeSettingsListener' => __DIR__ . '/..' . '/../lib/Listener/RegisterDeclarativeSettingsListener.php',
-        'OCA\\Provisioning_API\\Listener\\SetDeclarativeSettingsValueListener' => __DIR__ . '/..' . '/../lib/Listener/SetDeclarativeSettingsValueListener.php',
         'OCA\\Provisioning_API\\Listener\\UserDeletedListener' => __DIR__ . '/..' . '/../lib/Listener/UserDeletedListener.php',
         'OCA\\Provisioning_API\\Middleware\\Exceptions\\NotSubAdminException' => __DIR__ . '/..' . '/../lib/Middleware/Exceptions/NotSubAdminException.php',
         'OCA\\Provisioning_API\\Middleware\\ProvisioningApiMiddleware' => __DIR__ . '/..' . '/../lib/Middleware/ProvisioningApiMiddleware.php',
         'OCA\\Provisioning_API\\ResponseDefinitions' => __DIR__ . '/..' . '/../lib/ResponseDefinitions.php',
-        'OCA\\Provisioning_API\\TestSection' => __DIR__ . '/..' . '/../lib/TestSection.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
