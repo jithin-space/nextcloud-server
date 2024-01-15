@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "143725e36726d6a8e8fc092c8b44a4ee",
+    "content-hash": "465b51d04aa8f3e308e722448ce56a40",
     "packages": [
         {
             "name": "adhocore/cli",
@@ -78,16 +78,16 @@
         },
         {
             "name": "nextcloud/openapi-extractor",
-            "version": "dev-main",
+            "version": "dev-feat/routing/route-attribute",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nextcloud/openapi-extractor.git",
-                "reference": "d60f9911c30b7f3b7a5de046cf3bcaaa998376f5"
+                "reference": "e2cfc4b4ecc8e708c3d121fa2c3d7091765b8a12"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nextcloud/openapi-extractor/zipball/d60f9911c30b7f3b7a5de046cf3bcaaa998376f5",
-                "reference": "d60f9911c30b7f3b7a5de046cf3bcaaa998376f5",
+                "url": "https://api.github.com/repos/nextcloud/openapi-extractor/zipball/e2cfc4b4ecc8e708c3d121fa2c3d7091765b8a12",
+                "reference": "e2cfc4b4ecc8e708c3d121fa2c3d7091765b8a12",
                 "shasum": ""
             },
             "require": {
@@ -100,7 +100,6 @@
             "require-dev": {
                 "nextcloud/coding-standard": "^1.1"
             },
-            "default-branch": true,
             "bin": [
                 "generate-spec",
                 "merge-specs"
@@ -126,10 +125,10 @@
                 ]
             },
             "support": {
-                "source": "https://github.com/nextcloud/openapi-extractor/tree/main",
+                "source": "https://github.com/nextcloud/openapi-extractor/tree/feat/routing/route-attribute",
                 "issues": "https://github.com/nextcloud/openapi-extractor/issues"
             },
-            "time": "2024-01-08T13:18:50+00:00"
+            "time": "2024-01-15T12:43:23+00:00"
         },
         {
             "name": "nikic/php-parser",
