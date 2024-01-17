@@ -29,7 +29,7 @@ use OC\Security\IdentityProof\Manager;
 use OC\Updater\ChangesCheck;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Http;
-use OCP\AppFramework\Http\Attribute\Route;
+use OCP\AppFramework\Http\Attribute\ApiRoute;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\Defaults;
 use OCP\IConfig;
@@ -64,7 +64,7 @@ class WhatsNewController extends OCSController {
 	 * 200: Changes returned
 	 * 204: No changes
 	 */
-	#[Route(Route::TYPE_OCS, verb: 'GET', url: '/whatsnew', root: '/core')]
+	#[ApiRoute(verb: 'GET', url: '/whatsnew', root: '/core')]
 	public function get():DataResponse {
 		$user = $this->userSession->getUser();
 		if ($user === null) {
@@ -112,7 +112,7 @@ class WhatsNewController extends OCSController {
 	 *
 	 * 200: Changes dismissed
 	 */
-	#[Route(Route::TYPE_OCS, verb: 'POST', url: '/whatsnew', root: '/core')]
+	#[ApiRoute(verb: 'POST', url: '/whatsnew', root: '/core')]
 	public function dismiss(string $version):DataResponse {
 		$user = $this->userSession->getUser();
 		if ($user === null) {

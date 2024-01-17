@@ -34,8 +34,8 @@ namespace OC\Core\Controller;
 use OC\Files\AppData\Factory;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attribute\FrontpageRoute;
 use OCP\AppFramework\Http\Attribute\IgnoreOpenAPI;
-use OCP\AppFramework\Http\Attribute\Route;
 use OCP\AppFramework\Http\FileDisplayResponse;
 use OCP\AppFramework\Http\NotFoundResponse;
 use OCP\AppFramework\Http\Response;
@@ -70,7 +70,7 @@ class CssController extends Controller {
 	 * @param string $appName css folder name
 	 * @return FileDisplayResponse|NotFoundResponse
 	 */
-	#[Route(Route::TYPE_INDEX, verb: 'GET', url: '/css/{appName}/{fileName}')]
+	#[FrontpageRoute(verb: 'GET', url: '/css/{appName}/{fileName}')]
 	public function getCss(string $fileName, string $appName): Response {
 		try {
 			$folder = $this->appData->getFolder($appName);

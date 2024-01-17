@@ -43,8 +43,8 @@ use OC\User\Session;
 use OC_App;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attribute\FrontpageRoute;
 use OCP\AppFramework\Http\Attribute\IgnoreOpenAPI;
-use OCP\AppFramework\Http\Attribute\Route;
 use OCP\AppFramework\Http\Attribute\UseSession;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\RedirectResponse;
@@ -92,7 +92,7 @@ class LoginController extends Controller {
 	 * @return RedirectResponse
 	 */
 	#[UseSession]
-	#[Route(Route::TYPE_INDEX, verb: 'GET', url: '/logout')]
+	#[FrontpageRoute(verb: 'GET', url: '/logout')]
 	public function logout() {
 		$loginToken = $this->request->getCookie('nc_token');
 		if (!is_null($loginToken)) {
@@ -128,7 +128,7 @@ class LoginController extends Controller {
 	 * @return TemplateResponse|RedirectResponse
 	 */
 	#[UseSession]
-	#[Route(Route::TYPE_INDEX, verb: 'GET', url: '/login')]
+	#[FrontpageRoute(verb: 'GET', url: '/login')]
 	public function showLoginForm(string $user = null, string $redirect_url = null): Http\Response {
 		if ($this->userSession->isLoggedIn()) {
 			return new RedirectResponse($this->urlGenerator->linkToDefaultPageUrl());
@@ -277,7 +277,7 @@ class LoginController extends Controller {
 	 * @return RedirectResponse
 	 */
 	#[UseSession]
-	#[Route(Route::TYPE_INDEX, verb: 'POST', url: '/login')]
+	#[FrontpageRoute(verb: 'POST', url: '/login')]
 	public function tryLogin(Chain $loginChain,
 		string $user = '',
 		string $password = '',
@@ -363,7 +363,7 @@ class LoginController extends Controller {
 	 *
 	 */
 	#[UseSession]
-	#[Route(Route::TYPE_INDEX, verb: 'POST', url: '/login/confirm')]
+	#[FrontpageRoute(verb: 'POST', url: '/login/confirm')]
 	public function confirmPassword(string $password): DataResponse {
 		$loginName = $this->userSession->getLoginName();
 		$loginResult = $this->userManager->checkPassword($loginName, $password);

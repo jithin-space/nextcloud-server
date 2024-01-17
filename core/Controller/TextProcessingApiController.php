@@ -30,9 +30,9 @@ use InvalidArgumentException;
 use OCA\Core\ResponseDefinitions;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\AnonRateLimit;
+use OCP\AppFramework\Http\Attribute\ApiRoute;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
-use OCP\AppFramework\Http\Attribute\Route;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\Common\Exception\NotFoundException;
@@ -73,7 +73,7 @@ class TextProcessingApiController extends \OCP\AppFramework\OCSController {
 	 * 200: Task types returned
 	 */
 	#[PublicPage]
-	#[Route(Route::TYPE_OCS, verb: 'GET', url: '/tasktypes', root: '/textprocessing')]
+	#[ApiRoute(verb: 'GET', url: '/tasktypes', root: '/textprocessing')]
 	public function taskTypes(): DataResponse {
 		$typeClasses = $this->textProcessingManager->getAvailableTaskTypes();
 		$types = [];
@@ -115,7 +115,7 @@ class TextProcessingApiController extends \OCP\AppFramework\OCSController {
 	#[PublicPage]
 	#[UserRateLimit(limit: 20, period: 120)]
 	#[AnonRateLimit(limit: 5, period: 120)]
-	#[Route(Route::TYPE_OCS, verb: 'POST', url: '/schedule', root: '/textprocessing')]
+	#[ApiRoute(verb: 'POST', url: '/schedule', root: '/textprocessing')]
 	public function schedule(string $input, string $type, string $appId, string $identifier = ''): DataResponse {
 		try {
 			$task = new Task($type, $input, $appId, $this->userId, $identifier);
@@ -153,7 +153,7 @@ class TextProcessingApiController extends \OCP\AppFramework\OCSController {
 	 * 404: Task not found
 	 */
 	#[PublicPage]
-	#[Route(Route::TYPE_OCS, verb: 'GET', url: '/task/{id}', root: '/textprocessing')]
+	#[ApiRoute(verb: 'GET', url: '/task/{id}', root: '/textprocessing')]
 	public function getTask(int $id): DataResponse {
 		try {
 			$task = $this->textProcessingManager->getUserTask($id, $this->userId);
@@ -181,7 +181,7 @@ class TextProcessingApiController extends \OCP\AppFramework\OCSController {
 	 * 404: Task not found
 	 */
 	#[NoAdminRequired]
-	#[Route(Route::TYPE_OCS, verb: 'DELETE', url: '/task/{id}', root: '/textprocessing')]
+	#[ApiRoute(verb: 'DELETE', url: '/task/{id}', root: '/textprocessing')]
 	public function deleteTask(int $id): DataResponse {
 		try {
 			$task = $this->textProcessingManager->getUserTask($id, $this->userId);
@@ -212,7 +212,7 @@ class TextProcessingApiController extends \OCP\AppFramework\OCSController {
 	 *  200: Task list returned
 	 */
 	#[NoAdminRequired]
-	#[Route(Route::TYPE_OCS, verb: 'GET', url: '/tasks/app/{appId}', root: '/textprocessing')]
+	#[ApiRoute(verb: 'GET', url: '/tasks/app/{appId}', root: '/textprocessing')]
 	public function listTasksByApp(string $appId, ?string $identifier = null): DataResponse {
 		try {
 			$tasks = $this->textProcessingManager->getUserTasksByApp($this->userId, $appId, $identifier);

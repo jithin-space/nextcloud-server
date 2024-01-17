@@ -28,7 +28,7 @@ namespace OC\Core\Controller;
 use OC\Contacts\ContactsMenu\Manager;
 use OCA\Core\ResponseDefinitions;
 use OCP\AppFramework\Http;
-use OCP\AppFramework\Http\Attribute\Route;
+use OCP\AppFramework\Http\Attribute\ApiRoute;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use OCP\IUserSession;
@@ -57,7 +57,7 @@ class HoverCardController extends \OCP\AppFramework\OCSController {
 	 * 200: User details returned
 	 * 404: User not found
 	 */
-	#[Route(Route::TYPE_OCS, verb: 'GET', url: '/v1/{userId}', root: '/hovercard')]
+	#[ApiRoute(verb: 'GET', url: '/v1/{userId}', root: '/hovercard')]
 	public function getUser(string $userId): DataResponse {
 		$contact = $this->manager->findOne($this->userSession->getUser(), IShare::TYPE_USER, $userId);
 

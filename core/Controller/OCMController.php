@@ -29,7 +29,7 @@ namespace OC\Core\Controller;
 use Exception;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
-use OCP\AppFramework\Http\Attribute\Route;
+use OCP\AppFramework\Http\Attribute\FrontpageRoute;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\Capabilities\ICapability;
 use OCP\IConfig;
@@ -65,7 +65,7 @@ class OCMController extends Controller {
 	 * 200: OCM Provider details returned
 	 * 500: OCM not supported
 	 */
-	#[Route(Route::TYPE_INDEX, verb: 'GET', url: '/ocm-provider/')]
+	#[FrontpageRoute(verb: 'GET', url: '/ocm-provider/')]
 	public function discovery(): DataResponse {
 		try {
 			$cap = Server::get(

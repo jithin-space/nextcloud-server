@@ -32,7 +32,7 @@ namespace OC\Core\Controller;
 use Exception;
 use OCA\Core\ResponseDefinitions;
 use OCP\AppFramework\Http;
-use OCP\AppFramework\Http\Attribute\Route;
+use OCP\AppFramework\Http\Attribute\ApiRoute;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\OCSController;
 use OCP\Collaboration\Resources\CollectionException;
@@ -85,7 +85,7 @@ class CollaborationResourcesController extends OCSController {
 	 * 200: Collection returned
 	 * 404: Collection not found
 	 */
-	#[Route(Route::TYPE_OCS, verb: 'GET', url: '/resources/collections/{collectionId}', root: '/collaboration')]
+	#[ApiRoute(verb: 'GET', url: '/resources/collections/{collectionId}', root: '/collaboration')]
 	public function listCollection(int $collectionId): DataResponse {
 		try {
 			$collection = $this->getCollection($collectionId);
@@ -107,7 +107,7 @@ class CollaborationResourcesController extends OCSController {
 	 * 200: Collections returned
 	 * 404: Collection not found
 	 */
-	#[Route(Route::TYPE_OCS, verb: 'GET', url: '/resources/collections/search/{filter}', root: '/collaboration')]
+	#[ApiRoute(verb: 'GET', url: '/resources/collections/search/{filter}', root: '/collaboration')]
 	public function searchCollections(string $filter): DataResponse {
 		try {
 			$collections = $this->manager->searchCollections($this->userSession->getUser(), $filter);
@@ -131,7 +131,7 @@ class CollaborationResourcesController extends OCSController {
 	 * 200: Collection returned
 	 * 404: Collection not found or resource inaccessible
 	 */
-	#[Route(Route::TYPE_OCS, verb: 'POST', url: '/resources/collections/{collectionId}', root: '/collaboration')]
+	#[ApiRoute(verb: 'POST', url: '/resources/collections/{collectionId}', root: '/collaboration')]
 	public function addResource(int $collectionId, string $resourceType, string $resourceId): DataResponse {
 		try {
 			$collection = $this->getCollection($collectionId);
@@ -166,7 +166,7 @@ class CollaborationResourcesController extends OCSController {
 	 * 200: Collection returned
 	 * 404: Collection or resource not found
 	 */
-	#[Route(Route::TYPE_OCS, verb: 'DELETE', url: '/resources/collections/{collectionId}', root: '/collaboration')]
+	#[ApiRoute(verb: 'DELETE', url: '/resources/collections/{collectionId}', root: '/collaboration')]
 	public function removeResource(int $collectionId, string $resourceType, string $resourceId): DataResponse {
 		try {
 			$collection = $this->getCollection($collectionId);
@@ -197,7 +197,7 @@ class CollaborationResourcesController extends OCSController {
 	 * 200: Collections returned
 	 * 404: Resource not accessible
 	 */
-	#[Route(Route::TYPE_OCS, verb: 'GET', url: '/resources/{resourceType}/{resourceId}', root: '/collaboration')]
+	#[ApiRoute(verb: 'GET', url: '/resources/{resourceType}/{resourceId}', root: '/collaboration')]
 	public function getCollectionsByResource(string $resourceType, string $resourceId): DataResponse {
 		try {
 			$resource = $this->manager->getResourceForUser($resourceType, $resourceId, $this->userSession->getUser());
@@ -226,7 +226,7 @@ class CollaborationResourcesController extends OCSController {
 	 * 400: Creating collection is not possible
 	 * 404: Resource inaccessible
 	 */
-	#[Route(Route::TYPE_OCS, verb: 'POST', url: '/resources/{baseResourceType}/{baseResourceId}', root: '/collaboration')]
+	#[ApiRoute(verb: 'POST', url: '/resources/{baseResourceType}/{baseResourceId}', root: '/collaboration')]
 	public function createCollectionOnResource(string $baseResourceType, string $baseResourceId, string $name): DataResponse {
 		if (!isset($name[0]) || isset($name[64])) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
@@ -260,7 +260,7 @@ class CollaborationResourcesController extends OCSController {
 	 * 200: Collection returned
 	 * 404: Collection not found
 	 */
-	#[Route(Route::TYPE_OCS, verb: 'PUT', url: '/resources/collections/{collectionId}', root: '/collaboration')]
+	#[ApiRoute(verb: 'PUT', url: '/resources/collections/{collectionId}', root: '/collaboration')]
 	public function renameCollection(int $collectionId, string $collectionName): DataResponse {
 		try {
 			$collection = $this->getCollection($collectionId);
