@@ -38,16 +38,20 @@ class Route {
 
 	/**
 	 * Corresponds to the `ocs` key in routes.php
+	 *
+	 * @see ApiRoute
 	 */
-	public const TYPE_OCS = 'ocs';
+	public const TYPE_API = 'ocs';
 
 	/**
 	 * Corresponds to the `routes` key in routes.php
+	 *
+	 * @see FrontpageRoute
 	 */
-	public const TYPE_INDEX = 'routes';
+	public const TYPE_FRONTPAGE = 'routes';
 
 	/**
-	 * @param string $type Either Route::TYPE_OCS or Route::TYPE_INDEX.
+	 * @param string $type Either Route::TYPE_API or Route::TYPE_FRONTPAGE.
 	 * @psalm-param Route::TYPE_* $type
 	 * @param string $verb HTTP method of the route.
 	 * @psalm-param 'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'OPTIONS'|'PATCH' $verb

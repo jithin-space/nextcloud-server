@@ -462,7 +462,9 @@ class Router implements IRouter {
 
 			foreach ($class->getMethods() as $method) {
 				foreach ($method->getAttributes() as $attribute) {
-					if ($attribute->getName() !== "OCP\AppFramework\Http\Attribute\Route") {
+					if ($attribute->getName() !== "OCP\AppFramework\Http\Attribute\Route" &&
+						$attribute->getName() !== "OCP\AppFramework\Http\Attribute\ApiRoute" &&
+						$attribute->getName() !== "OCP\AppFramework\Http\Attribute\FrontpageRoute") {
 						continue;
 					}
 
@@ -473,10 +475,7 @@ class Router implements IRouter {
 					// Remove "Controller" suffix
 					$serializedRoute["name"] = substr($class->getShortName(), 0, -10) . "#" . $method->getName();
 
-					$key = match ($route->getType()) {
-						RouteAttribute::TYPE_OCS => "ocs",
-						RouteAttribute::TYPE_INDEX => "routes",
-					};
+					$key = $route->getType();
 
 					$routes[$key] ??= [];
 					$routes[$key][] = $serializedRoute;
