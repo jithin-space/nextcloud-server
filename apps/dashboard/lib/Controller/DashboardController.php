@@ -35,7 +35,6 @@ use OCA\Viewer\Event\LoadViewer;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\OpenAPI;
-use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Services\IInitialState;
 use OCP\Dashboard\IManager;
@@ -132,25 +131,5 @@ class DashboardController extends Controller {
 		$response->setFeaturePolicy($featurePolicy);
 
 		return $response;
-	}
-
-	/**
-	 * @NoAdminRequired
-	 * @param string $layout
-	 * @return JSONResponse
-	 */
-	public function updateLayout(string $layout): JSONResponse {
-		$this->config->setUserValue($this->userId, 'dashboard', 'layout', $layout);
-		return new JSONResponse(['layout' => $layout]);
-	}
-
-	/**
-	 * @NoAdminRequired
-	 * @param string $statuses
-	 * @return JSONResponse
-	 */
-	public function updateStatuses(string $statuses): JSONResponse {
-		$this->config->setUserValue($this->userId, 'dashboard', 'statuses', $statuses);
-		return new JSONResponse(['statuses' => $statuses]);
 	}
 }
