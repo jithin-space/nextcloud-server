@@ -152,6 +152,7 @@ trait CommonThemeTrait {
 				return [
 					'--image-background' => "url('" . $this->urlGenerator->linkToRouteAbsolute('theming.userTheme.getBackground') . "?v=$cacheBuster')",
 					'--color-background-plain' => $this->themingDefaults->getColorPrimary(),
+					'--background-image-invert-if-bright' => $isPrimaryBright ? 'invert(100%)' : 'no',
 				];
 			}
 
