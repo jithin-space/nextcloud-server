@@ -30,7 +30,7 @@ declare(strict_types=1);
  */
 namespace OCA\Dashboard\Controller;
 
-use JsonException;
+use OCA\Dashboard\Service\DashboardService;
 use OCA\Files\Event\LoadSidebar;
 use OCA\Viewer\Event\LoadViewer;
 use OCP\AppFramework\Controller;
@@ -70,7 +70,8 @@ class DashboardController extends Controller {
 		IManager $dashboardManager,
 		IConfig $config,
 		IL10N $l10n,
-		$userId
+		$userId,
+		private DashboardService $service,
 	) {
 		parent::__construct($appName, $request);
 
@@ -98,8 +99,6 @@ class DashboardController extends Controller {
 
 		$this->eventDispatcher->dispatchTyped(new RegisterWidgetEvent($this->dashboardManager));
 
-		$systemDefault = $this->config->getAppValue('dashboard', 'layout', 'recommendations,spreed,mail,calendar');
-		$userLayout = array_filter(explode(',', $this->config->getUserValue($this->userId, 'dashboard', 'layout', $systemDefault)), fn (string $value) => $value !== '');
 		$widgets = array_map(function (IWidget $widget) {
 			return [
 				'id' => $widget->getId(),
@@ -108,19 +107,10 @@ class DashboardController extends Controller {
 				'url' => $widget->getUrl()
 			];
 		}, $this->dashboardManager->getWidgets());
-		$configStatuses = $this->config->getUserValue($this->userId, 'dashboard', 'statuses', '');
-		try {
-			// Parse the old format
-			$statuses = json_decode($configStatuses, true, 512, JSON_THROW_ON_ERROR);
-			// We avoid getting an empty array as it will not produce an object in UI's JS
-			$statuses = array_keys(array_filter($statuses, static fn (bool $value) => $value));
-		} catch (JsonException $e) {
-			$statuses = array_filter(explode(',', $configStatuses), fn (string $value) => $value !== '');
-		}
 
 		$this->initialState->provideInitialState('panels', $widgets);
-		$this->initialState->provideInitialState('statuses', $statuses);
-		$this->initialState->provideInitialState('layout', $userLayout);
+		$this->initialState->provideInitialState('statuses', $this->service->getStatuses());
+		$this->initialState->provideInitialState('layout', $this->service->getLayout());
 		$this->initialState->provideInitialState('firstRun', $this->config->getUserValue($this->userId, 'dashboard', 'firstRun', '1') === '1');
 		$this->config->setUserValue($this->userId, 'dashboard', 'firstRun', '0');
 
