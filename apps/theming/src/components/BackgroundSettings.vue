@@ -32,14 +32,31 @@
 				'background background__filepicker': true,
 				'background--active': backgroundImage === 'custom'
 			}"
-			:data-color-bright="invertTextColor(Theming.color)"
 			data-user-theming-background-custom
 			tabindex="0"
 			@click="pickFile">
 			{{ t('theming', 'Custom background') }}
-			<ImageEdit v-if="backgroundImage !== 'custom'" :size="26" />
+			<ImageEdit v-if="backgroundImage !== 'custom'" :size="20" />
 			<Check :size="44" />
 		</button>
+
+		<!-- Custom color picker -->
+		<NcColorPicker v-model="Theming.backgroundColor" @input="debouncePickColor">
+			<button :class="{
+					'icon-loading': loading === 'color',
+					'background background__color': true,
+					'background--active': backgroundImage === 'color'
+				}"
+				:data-color="Theming.backgroundColor"
+				:data-color-bright="invertTextColor(Theming.backgroundColor)"
+				:style="{ backgroundColor: Theming.backgroundColor, '--border-color': Theming.backgroundColor}"
+				data-user-theming-background-color
+				tabindex="0">
+				{{ t('theming', 'Plain background') /* TRANSLATORS: Background using a single color */ }}
+				<ColorPalette v-if="backgroundImage !== 'color'" :size="20" />
+				<Check :size="44" />
+			</button>
+		</NcColorPicker>
 
 		<!-- Default background -->
 		<button :aria-pressed="backgroundImage === 'default'"
@@ -57,32 +74,6 @@
 			<Check :size="44" />
 		</button>
 
-		<!-- Custom color picker -->
-		<NcColorPicker v-model="Theming.color" @input="debouncePickColor">
-			<button class="background background__color"
-				:data-color="Theming.color"
-				:data-color-bright="invertTextColor(Theming.color)"
-				:style="{ backgroundColor: Theming.color, '--border-color': Theming.color}"
-				data-user-theming-background-color
-				tabindex="0">
-				{{ t('theming', 'Change color') }}
-			</button>
-		</NcColorPicker>
-
-		<!-- Remove background -->
-		<button :aria-pressed="isBackgroundDisabled"
-			:class="{
-				'background background__delete': true,
-				'background--active': isBackgroundDisabled
-			}"
-			data-user-theming-background-clear
-			tabindex="0"
-			@click="removeBackground">
-			{{ t('theming', 'No background') }}
-			<Close v-if="!isBackgroundDisabled" :size="32" />
-			<Check :size="44" />
-		</button>
-
 		<!-- Background set selection -->
 		<button v-for="shippedBackground in shippedBackgrounds"
 			:key="shippedBackground.name"
@@ -94,7 +85,6 @@
 				'icon-loading': loading === shippedBackground.name,
 				'background--active': backgroundImage === shippedBackground.name
 			}"
-			:data-color-bright="shippedBackground.details.theming === 'dark'"
 			:data-user-theming-background-shipped="shippedBackground.name"
 			:style="{ backgroundImage: 'url(' + shippedBackground.preview + ')', '--border-color': shippedBackground.details.primary_color }"
 			tabindex="0"
@@ -116,8 +106,8 @@ import NcColorPicker from '@nextcloud/vue/dist/Components/NcColorPicker.js'
 import Vibrant from 'node-vibrant'
 
 import Check from 'vue-material-design-icons/Check.vue'
-import Close from 'vue-material-design-icons/Close.vue'
 import ImageEdit from 'vue-material-design-icons/ImageEdit.vue'
+import ColorPalette from 'vue-material-design-icons/Palette.vue'
 
 const backgroundImage = loadState('theming', 'backgroundImage')
 const shippedBackgroundList = loadState('theming', 'shippedBackgrounds')
@@ -126,12 +116,13 @@ const defaultShippedBackground = loadState('theming', 'defaultShippedBackground'
 
 const prefixWithBaseUrl = (url) => generateFilePath('theming', '', 'img/background/') + url
 
+console.warn(loadState('theming', 'data', {}))
 export default {
 	name: 'BackgroundSettings',
 
 	components: {
 		Check,
-		Close,
+		ColorPalette,
 		ImageEdit,
 		NcColorPicker,
 	},
@@ -173,11 +164,6 @@ export default {
 
 		isGlobalBackgroundDeleted() {
 			return themingDefaultBackground === 'backgroundColor'
-		},
-
-		isBackgroundDisabled() {
-			return this.backgroundImage === 'disabled'
-			|| !this.backgroundImage
 		},
 	},
 
@@ -225,7 +211,7 @@ export default {
 		async update(data) {
 			// Update state
 			this.backgroundImage = data.backgroundImage
-			this.Theming.color = data.backgroundColor
+			this.Theming.backgroundColor = data.backgroundColor
 
 			// Notify parent and reload style
 			this.$emit('update:background')
@@ -347,14 +333,19 @@ export default {
 		height: 96px;
 		margin: 8px;
 		text-align: center;
+		word-wrap: break-word;
+		hyphens: auto;
 		border: 2px solid var(--color-main-background);
 		border-radius: var(--border-radius-large);
 		background-position: center center;
 		background-size: cover;
 
 		&__filepicker {
+			background-color: var(--color-main-text);
+			background-color: var(--color-background-dark);
+
 			&.background--active {
-				color: white;
+				color: var(--color-background-plain-text);
 				background-image: var(--image-background);
 			}
 		}

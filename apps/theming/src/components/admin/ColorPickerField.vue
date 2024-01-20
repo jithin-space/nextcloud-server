@@ -27,9 +27,9 @@
 			<NcColorPicker :value.sync="localValue"
 				:advanced-fields="true"
 				@update:value="debounceSave">
-				<NcButton class="field__button"
+				<NcButton :id="id"
+					class="field__button"
 					type="primary"
-					:id="id"
 					:aria-label="t('theming', 'Select a custom color')"
 					data-admin-theming-setting-primary-color-picker>
 					{{ value }}
@@ -44,6 +44,9 @@
 					<Undo :size="20" />
 				</template>
 			</NcButton>
+		</div>
+		<div v-if="description" class="description">
+			{{ description }}
 		</div>
 
 		<NcNoteCard v-if="errorMessage"
@@ -82,6 +85,10 @@ export default {
 			type: String,
 			required: true,
 		},
+		description: {
+			type: String,
+			default: '',
+		},
 		value: {
 			type: String,
 			required: true,
@@ -106,13 +113,16 @@ export default {
 
 <style lang="scss" scoped>
 @import './shared/field.scss';
+.description {
+	color: var(--color-text-maxcontrast);
+}
 
 .field {
 	// Override default NcButton styles
 	&__button {
 		width: 230px !important;
 		border-radius: var(--border-radius-large) !important;
-		background-color: var(--color-primary-default) !important;
+		background-color: v-bind('value') !important;
 
 		// emulated hover state because it would not make sense
 		// to create a dedicated global variable for the color-primary-default
