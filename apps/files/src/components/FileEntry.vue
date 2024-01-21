@@ -21,7 +21,11 @@
   -->
 
 <template>
-	<tr :class="{'files-list__row--dragover': dragover, 'files-list__row--loading': isLoading}"
+	<tr :class="{
+			'files-list__row--dragover': dragover,
+			'files-list__row--loading': isLoading,
+			'files-list__row--active': isActive,
+		}"
 		data-cy-files-list-row
 		:data-cy-files-list-row-fileid="fileid"
 		:data-cy-files-list-row-name="source.basename"
@@ -314,6 +318,9 @@ export default defineComponent({
 			return this.isRenaming && this.filesListWidth < 512
 		},
 
+		/**
+		 * This entry is the current active node
+		 */
 		isActive() {
 			return this.fileid === this.currentFileId?.toString?.()
 		},
