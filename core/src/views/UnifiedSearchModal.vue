@@ -8,6 +8,10 @@
 			class="unified-search__date-range"
 			@set:custom-date-range="setCustomDateRange"
 			@update:is-open="showDateRangeModal = $event" />
+		<ConversationsListModal :is-open="showConversationListModal"
+			class="unified-search__date-range"
+			@search-in:conversation="setSearchScopeToConversation"
+			@update:is-open="showConversationListModal = $event" />
 		<!-- Unified search form -->
 		<div ref="unifiedSearch" class="unified-search-modal">
 			<div class="unified-search-modal__header">
@@ -18,7 +22,7 @@
 					:label="t('core', 'Search apps, files, tags, messages') + '...'"
 					@update:value="debouncedFind" />
 				<div class="unified-search-modal__filters">
-					<NcActions :menu-name="t('core', 'Apps and Settings')" :open.sync="providerActionMenuIsOpen">
+					<NcActions :menu-name="t('core', 'Places')" :open.sync="providerActionMenuIsOpen">
 						<template #icon>
 							<ListBox :size="20" />
 						</template>
@@ -133,6 +137,7 @@
 import ArrowRight from 'vue-material-design-icons/ArrowRight.vue'
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import CalendarRangeIcon from 'vue-material-design-icons/CalendarRange.vue'
+import ConversationsListModal from '../components/UnifiedSearch/ConversationsListModal.vue'
 import CustomDateRangeModal from '../components/UnifiedSearch/CustomDateRangeModal.vue'
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue'
 import FilterIcon from 'vue-material-design-icons/Filter.vue'
@@ -160,6 +165,7 @@ export default {
 		ArrowRight,
 		AccountGroup,
 		CalendarRangeIcon,
+		ConversationsListModal,
 		CustomDateRangeModal,
 		DotsHorizontalIcon,
 		FilterIcon,
@@ -193,6 +199,7 @@ export default {
 	},
 	data() {
 		return {
+			searchScope: 'everywhere',
 			providers: [],
 			providerActionMenuIsOpen: false,
 			dateActionMenuIsOpen: false,
@@ -212,6 +219,7 @@ export default {
 			debouncedFind: debounce(this.find, 300),
 			debouncedFilterContacts: debounce(this.filterContacts, 300),
 			showDateRangeModal: false,
+			showConversationListModal: false,
 			internalIsVisible: false,
 		}
 	},
@@ -252,6 +260,7 @@ export default {
 	mounted() {
 		getProviders().then((providers) => {
 			this.providers = providers
+			this.providers.push({ icon: '/apps/spreed/img/app.svg', id: 'inConversation', name: 'In Conversation' })
 			console.debug('Search providers', this.providers)
 		})
 		getContacts({ searchTerm: '' }).then((contacts) => {
@@ -266,6 +275,16 @@ export default {
 				this.results = []
 				this.searching = false
 				return
+			}
+			switch (this.searchScope) {
+			case 'everywhere':
+				// Code to execute if searchScope is 'everywhere'
+				break
+			case 'conversation':
+				// Code to execute if searchScope is 'conversation'
+				break
+			default:
+				// Code to execute if searchScope is neither 'everywhere' nor 'conversation'
 			}
 			// Event should probably be refactored at some point to used nextcloud:unified-search.search
 			emit('nextcloud:unified-search.search', { query })
@@ -404,6 +423,9 @@ export default {
 		},
 		addProviderFilter(providerFilter, loadMoreResultsForProvider = false) {
 			if (!providerFilter.id) return
+			if (providerFilter.id === 'inConversation') {
+				this.showConversationListModal = true
+			}
 			this.providerResultLimit = loadMoreResultsForProvider ? this.providerResultLimit : 5
 			this.providerActionMenuIsOpen = false
 			const existingFilter = this.filteredProviders.find(existing => existing.id === providerFilter.id)
@@ -527,6 +549,15 @@ export default {
 			this.dateFilter.text = t('core', `Between ${this.dateFilter.startFrom.toLocaleDateString()} and ${this.dateFilter.endAt.toLocaleDateString()}`)
 			this.updateDateFilter()
 		},
+		setSearchScopeToConversation(event) {
+			for (const provider of this.filteredProviders) {
+				if (provider.id === 'inConversation') {
+					provider.name = `Search in talk room : ${event.displayName}`
+					break
+				}
+			}
+			console.debug('Search scope set to conversation', event)
+		},
 		focusInput() {
 			this.$refs.searchInput.$el.children[0].children[0].focus()
 		},
@@ -549,7 +580,7 @@ export default {
 	padding-block: 10px 0;
 
 	// inline padding on direct children to make sure the scrollbar is on the modal container
-	> * {
+	>* {
 		padding-inline: 20px;
 	}
 
