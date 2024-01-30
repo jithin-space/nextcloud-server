@@ -1056,7 +1056,7 @@ class CardDavBackend implements BackendInterface, SyncSupport {
 			$addressBookData = $this->getAddressBookById($addressBookId);
 			$oldShares = $this->getShares($addressBookId);
 
-			$this->sharingBackend->updateShares($shareable, $add, $remove);
+			$this->sharingBackend->updateShares($shareable, $add, $remove, $oldShares);
 
 			$this->dispatcher->dispatchTyped(new AddressBookShareUpdatedEvent($addressBookId, $addressBookData, $oldShares, $add, $remove));
 		}, $this->db);

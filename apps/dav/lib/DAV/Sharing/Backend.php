@@ -44,10 +44,12 @@ class Backend {
 	private IGroupManager $groupManager;
 	private Principal $principalBackend;
 	private string $resourceType;
-
 	public const ACCESS_OWNER = 1;
+
 	public const ACCESS_READ_WRITE = 2;
 	public const ACCESS_READ = 3;
+	// 4 is already in use for public calendars
+	const ACCESS_UNSHARED = 5;
 
 	private CappedMemoryCache $shareCache;
 
@@ -64,9 +66,9 @@ class Backend {
 	 * @param list<array{href: string, commonName: string, readOnly: bool}> $add
 	 * @param list<string> $remove
 	 */
-	public function updateShares(IShareable $shareable, array $add, array $remove): void {
+	public function updateShares(IShareable $shareable, array $add, array $remove, array $oldShares = []): void {
 		$this->shareCache->clear();
-		$this->atomic(function () use ($shareable, $add, $remove) {
+		$this->atomic(function () use ($shareable, $add, $remove, $oldShares) {
 			foreach ($add as $element) {
 				$principal = $this->principalBackend->findByUri($element['href'], '');
 				if ($principal !== '') {
@@ -75,7 +77,16 @@ class Backend {
 			}
 			foreach ($remove as $element) {
 				$principal = $this->principalBackend->findByUri($element, '');
-				if ($principal !== '') {
+				if ($principal === '') {
+					continue;
+				}
+
+				// Delete any possible direct shares (since the frontend does not separate between them)
+				$this->deleteShare($shareable, $element);
+
+				// Check if a user has a groupshare that they're trying to free themselves from
+				// If so we need to add a self::ACCESS_UNSHARED row
+				if(!str_contains($principal, 'group') && $this->hasGroupShare($oldShares)) {
 					$this->unshare($shareable, $element);
 				}
 			}
@@ -112,7 +123,7 @@ class Backend {
 		}
 
 		// remove the share if it already exists
-		$this->unshare($shareable, $element['href']);
+		$this->deleteShare($shareable, $element['href']);
 		$access = self::ACCESS_READ;
 		if (isset($element['readOnly'])) {
 			$access = $element['readOnly'] ? self::ACCESS_READ : self::ACCESS_READ_WRITE;
@@ -147,6 +158,28 @@ class Backend {
 			->executeStatement();
 	}
 
+	private function deleteShare(IShareable $shareable, string $element): void {
+		$this->shareCache->clear();
+		$parts = explode(':', $element, 2);
+		if ($parts[0] !== 'principal') {
+			return;
+		}
+
+		// don't share with owner
+		if ($shareable->getOwner() === $parts[1]) {
+			return;
+		}
+
+		$query = $this->db->getQueryBuilder();
+		$query->delete('dav_shares');
+		$query->where(
+			$query->expr()->eq('resourceid', $query->createNamedParameter($shareable->getResourceId(), IQueryBuilder::PARAM_INT)),
+			$query->expr()->eq('type', $query->createNamedParameter($this->resourceType)),
+			$query->expr()->eq('principaluri', $query->createNamedParameter($parts[1]))
+		);
+		$query->executeStatement();
+	}
+
 	private function unshare(IShareable $shareable, string $element): void {
 		$this->shareCache->clear();
 		$parts = explode(':', $element, 2);
@@ -160,12 +193,29 @@ class Backend {
 		}
 
 		$query = $this->db->getQueryBuilder();
-		$query->delete('dav_shares')
-			->where($query->expr()->eq('resourceid', $query->createNamedParameter($shareable->getResourceId())))
-			->andWhere($query->expr()->eq('type', $query->createNamedParameter($this->resourceType)))
-			->andWhere($query->expr()->eq('principaluri', $query->createNamedParameter($parts[1])))
-		;
+		$query->insert('dav_shares')
+			->values([
+				'principaluri' => $query->createNamedParameter($parts[1]),
+				'type' => $query->createNamedParameter($this->resourceType),
+				'access' => $query->createNamedParameter(self::ACCESS_UNSHARED),
+				'resourceid' => $query->createNamedParameter($shareable->getResourceId())
+			]);
 		$query->executeStatement();
+	}
+
+	/**
+	 * @param array $oldShares
+	 * @return bool
+	 */
+	private function hasGroupShare(array $oldShares): bool {
+		$group = false;
+		foreach ($oldShares as $share) {
+			if($share['{http://owncloud.org/ns}group-share'] === true) {
+				$group = true;
+				break;
+			}
+		}
+		return $group;
 	}
 
 	/**

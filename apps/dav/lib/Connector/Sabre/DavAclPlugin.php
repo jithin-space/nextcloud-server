@@ -58,6 +58,9 @@ class DavAclPlugin extends \Sabre\DAVACL\Plugin {
 				case AddressBook::class:
 					$type = 'Addressbook';
 					break;
+				case Calendar::class:
+					$type = 'Calendar';
+					break;
 				default:
 					$type = 'Node';
 					break;
