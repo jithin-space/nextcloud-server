@@ -73,30 +73,71 @@ class AddMissingIndices extends Command {
 		$this->dispatcher->dispatchTyped($event);
 
 		$missingIndices = $event->getMissingIndices();
-		if ($missingIndices !== []) {
+		$toEditIndices = $event->toEditIndices();
+
+		if ($missingIndices !== [] || $toEditIndices !== []) {
 			$schema = new SchemaWrapper($this->connection);
 
-			foreach ($missingIndices as $missingIndex) {
-				if ($schema->hasTable($missingIndex['tableName'])) {
-					$table = $schema->getTable($missingIndex['tableName']);
-					if (!$table->hasIndex($missingIndex['indexName'])) {
-						$output->writeln('<info>Adding additional ' . $missingIndex['indexName'] . ' index to the ' . $table->getName() . ' table, this can take some time...</info>');
+			if ($missingIndices !== []) {
+				foreach ($missingIndices as $missingIndex) {
+					if ($schema->hasTable($missingIndex['tableName'])) {
+						$table = $schema->getTable($missingIndex['tableName']);
+						if (!$table->hasIndex($missingIndex['indexName'])) {
+							$output->writeln('<info>Adding additional ' . $missingIndex['indexName'] . ' index to the ' . $table->getName() . ' table, this can take some time...</info>');
 
-						if ($missingIndex['dropUnnamedIndex']) {
-							foreach ($table->getIndexes() as $index) {
-								$columns = $index->getColumns();
-								if ($columns === $missingIndex['columns']) {
-									$table->dropIndex($index->getName());
+							if ($missingIndex['dropUnnamedIndex']) {
+								foreach ($table->getIndexes() as $index) {
+									$columns = $index->getColumns();
+									if ($columns === $missingIndex['columns']) {
+										$table->dropIndex($index->getName());
+									}
 								}
+							}
+
+							if ($missingIndex['uniqueIndex']) {
+								$table->addUniqueIndex($missingIndex['columns'], $missingIndex['indexName'], $missingIndex['options']);
+							} else {
+								$table->addIndex($missingIndex['columns'], $missingIndex['indexName'], [], $missingIndex['options']);
+							}
+
+							$sqlQueries = $this->connection->migrateToSchema($schema->getWrappedSchema(), $dryRun);
+							if ($dryRun && $sqlQueries !== null) {
+								$output->writeln($sqlQueries);
+							}
+							$output->writeln('<info>' . $table->getName() . ' table updated successfully.</info>');
+						}
+					}
+				}
+			}
+
+			if ($toEditIndices !== []) {
+				foreach ($toEditIndices as $toEditIndex) {
+					if ($schema->hasTable($toEditIndex['tableName'])) {
+						$table = $schema->getTable($toEditIndex['tableName']);
+
+						$allOldIndicesExists = true;
+						foreach ($toEditIndex['oldIndexNames'] as $oldIndexName) {
+							if (!$table->hasIndex($oldIndexName)) {
+								$allOldIndicesExists = false;
 							}
 						}
 
-						if ($missingIndex['uniqueIndex']) {
-							$table->addUniqueIndex($missingIndex['columns'], $missingIndex['indexName'], $missingIndex['options']);
-						} else {
-							$table->addIndex($missingIndex['columns'], $missingIndex['indexName'], [], $missingIndex['options']);
+						if (!$allOldIndicesExists) {
+							continue;
 						}
 
+						foreach ($toEditIndex['oldIndexNames'] as $oldIndexName) {
+							$output->writeln('<info>Removing ' . $oldIndexName . ' index from the ' . $table->getName() . ' table</info>');
+							$table->dropIndex($oldIndexName);
+						}
+
+						$output->writeln('<info>Adding additional ' . $toEditIndex['newIndexName'] . ' index to the ' . $table->getName() . ' table, this can take some time...</info>');
+
+						if ($toEditIndex['uniqueIndex']) {
+							$table->addUniqueIndex($toEditIndex['columns'], $toEditIndex['newIndexName'], $toEditIndex['options']);
+						} else {
+							$table->addIndex($toEditIndex['columns'], $toEditIndex['newIndexName'], [], $toEditIndex['options']);
+						}
 
 						$sqlQueries = $this->connection->migrateToSchema($schema->getWrappedSchema(), $dryRun);
 						if ($dryRun && $sqlQueries !== null) {
