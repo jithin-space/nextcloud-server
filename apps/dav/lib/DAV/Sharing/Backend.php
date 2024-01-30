@@ -235,11 +235,13 @@ class Backend {
 		if ($cached) {
 			return $cached;
 		}
+
 		$query = $this->db->getQueryBuilder();
 		$result = $query->select(['principaluri', 'access'])
 			->from('dav_shares')
 			->where($query->expr()->eq('resourceid', $query->createNamedParameter($resourceId, IQueryBuilder::PARAM_INT)))
 			->andWhere($query->expr()->eq('type', $query->createNamedParameter($this->resourceType)))
+			->andWhere($query->expr()->neq('access', $query->createNamedParameter(self::ACCESS_UNSHARED, IQueryBuilder::PARAM_INT)))
 			->groupBy(['principaluri', 'access'])
 			->executeQuery();
 
@@ -272,6 +274,7 @@ class Backend {
 			->from('dav_shares')
 			->where($query->expr()->in('resourceid', $query->createNamedParameter($resourceIds, IQueryBuilder::PARAM_INT_ARRAY)))
 			->andWhere($query->expr()->eq('type', $query->createNamedParameter($this->resourceType)))
+			->andWhere($query->expr()->neq('access', $query->createNamedParameter(self::ACCESS_UNSHARED, IQueryBuilder::PARAM_INT)))
 			->groupBy(['principaluri', 'access', 'resourceid'])
 			->executeQuery();
 
