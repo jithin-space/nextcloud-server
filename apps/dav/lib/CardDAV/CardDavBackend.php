@@ -39,6 +39,7 @@ use OC\Search\Filter\DateTimeFilter;
 use OCA\DAV\Connector\Sabre\Principal;
 use OCA\DAV\DAV\Sharing\Backend;
 use OCA\DAV\DAV\Sharing\IShareable;
+use OCA\DAV\DAV\Sharing\SharingService;
 use OCA\DAV\Events\AddressBookCreatedEvent;
 use OCA\DAV\Events\AddressBookDeletedEvent;
 use OCA\DAV\Events\AddressBookShareUpdatedEvent;
@@ -51,6 +52,7 @@ use OCP\AppFramework\Db\TTransactional;
 use OCP\DB\Exception;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\EventDispatcher\IEventDispatcher;
+use OCP\ICacheFactory;
 use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IUserManager;
@@ -68,11 +70,8 @@ class CardDavBackend implements BackendInterface, SyncSupport {
 	public const PERSONAL_ADDRESSBOOK_URI = 'contacts';
 	public const PERSONAL_ADDRESSBOOK_NAME = 'Contacts';
 
-	private Principal $principalBackend;
 	private string $dbCardsTable = 'cards';
 	private string $dbCardsPropertiesTable = 'cards_properties';
-	private IDBConnection $db;
-	private Backend $sharingBackend;
 
 	/** @var array properties to index */
 	public static array $indexProperties = [
@@ -84,30 +83,14 @@ class CardDavBackend implements BackendInterface, SyncSupport {
 	 * @var string[] Map of uid => display name
 	 */
 	protected array $userDisplayNames;
-	private IUserManager $userManager;
-	private IEventDispatcher $dispatcher;
 	private array $etagCache = [];
 
-	/**
-	 * CardDavBackend constructor.
-	 *
-	 * @param IDBConnection $db
-	 * @param Principal $principalBackend
-	 * @param IUserManager $userManager
-	 * @param IGroupManager $groupManager
-	 * @param IEventDispatcher $dispatcher
-	 */
-	public function __construct(IDBConnection $db,
-		Principal $principalBackend,
-		IUserManager $userManager,
-		IGroupManager $groupManager,
-		IEventDispatcher $dispatcher) {
-		$this->db = $db;
-		$this->principalBackend = $principalBackend;
-		$this->userManager = $userManager;
-		$this->dispatcher = $dispatcher;
-		$this->sharingBackend = new Backend($this->db, $this->userManager, $groupManager, $principalBackend, 'addressbook');
-	}
+	public function __construct(private IDBConnection $db,
+		private Principal $principalBackend,
+		private IUserManager $userManager,
+		private IEventDispatcher $dispatcher,
+		private Backend $sharingBackend,
+	) {}
 
 	/**
 	 * Return the number of address books for a principal
@@ -1418,7 +1401,8 @@ class CardDavBackend implements BackendInterface, SyncSupport {
 	 * @return list<array{privilege: string, principal: string, protected: bool}>
 	 */
 	public function applyShareAcl(int $addressBookId, array $acl): array {
-		return $this->sharingBackend->applyShareAcl($addressBookId, $acl);
+		$shares = $this->sharingBackend->getShares($addressBookId);
+		return $this->sharingBackend->applyShareAcl($shares, $acl);
 	}
 
 	/**

@@ -80,6 +80,17 @@ class RootCollection extends SimpleCollection {
 			\OC::$server->getConfig(),
 			\OC::$server->getL10NFactory()
 		);
+		$sharingBackend = new \OCA\DAV\DAV\Sharing\Backend(
+			$db,
+			$userManager,
+			\OC::$server->get(\OCP\IGroupManager::class),
+			$userPrincipalBackend,
+			'calendar',
+			\OC::$server->get(\OCP\ICacheFactory::class),
+			\OC::$server->get(\OCA\DAV\DAV\Sharing\SharingService::class),
+			$logger
+		);
+
 		$groupPrincipalBackend = new GroupPrincipalBackend($groupManager, $userSession, $shareManager, $config);
 		$calendarResourcePrincipalBackend = new ResourcePrincipalBackend($db, $userSession, $groupManager, $logger, $proxyMapper);
 		$calendarRoomPrincipalBackend = new RoomPrincipalBackend($db, $userSession, $groupManager, $logger, $proxyMapper);
@@ -105,11 +116,12 @@ class RootCollection extends SimpleCollection {
 			$db,
 			$userPrincipalBackend,
 			$userManager,
-			$groupManager,
 			$random,
 			$logger,
 			$dispatcher,
-			$config
+			$config,
+			false,
+			$sharingBackend,
 		);
 		$userCalendarRoot = new CalendarRoot($userPrincipalBackend, $caldavBackend, 'principals/users', $logger);
 		$userCalendarRoot->disableListing = $disableListing;
@@ -143,11 +155,23 @@ class RootCollection extends SimpleCollection {
 		);
 
 		$pluginManager = new PluginManager(\OC::$server, \OC::$server->query(IAppManager::class));
-		$usersCardDavBackend = new CardDavBackend($db, $userPrincipalBackend, $userManager, $groupManager, $dispatcher);
+		$usersCardDavBackend = new CardDavBackend(
+			$db,
+			$userPrincipalBackend,
+			$userManager,
+			$dispatcher,
+			$sharingBackend,
+		);
 		$usersAddressBookRoot = new AddressBookRoot($userPrincipalBackend, $usersCardDavBackend, $pluginManager, $userSession->getUser(), $groupManager, 'principals/users');
 		$usersAddressBookRoot->disableListing = $disableListing;
 
-		$systemCardDavBackend = new CardDavBackend($db, $userPrincipalBackend, $userManager, $groupManager, $dispatcher);
+		$systemCardDavBackend = new CardDavBackend(
+			$db,
+			$userPrincipalBackend,
+			$userManager,
+			$dispatcher,
+			$sharingBackend,
+		);
 		$systemAddressBookRoot = new AddressBookRoot(new SystemPrincipalBackend(), $systemCardDavBackend, $pluginManager, $userSession->getUser(), $groupManager, 'principals/system');
 		$systemAddressBookRoot->disableListing = $disableListing;
 

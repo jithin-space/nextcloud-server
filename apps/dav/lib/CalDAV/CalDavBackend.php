@@ -45,6 +45,7 @@ use OCA\DAV\AppInfo\Application;
 use OCA\DAV\Connector\Sabre\Principal;
 use OCA\DAV\DAV\Sharing\Backend;
 use OCA\DAV\DAV\Sharing\IShareable;
+use OCA\DAV\DAV\Sharing\SharingService;
 use OCA\DAV\Events\CachedCalendarObjectCreatedEvent;
 use OCA\DAV\Events\CachedCalendarObjectDeletedEvent;
 use OCA\DAV\Events\CachedCalendarObjectUpdatedEvent;
@@ -208,7 +209,6 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 	 */
 	protected array $userDisplayNames;
 
-	private Backend $calendarSharingBackend;
 	private string $dbObjectPropertiesTable = 'calendarobjects_props';
 	private array $cachedObjects = [];
 
@@ -216,15 +216,13 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 		private IDBConnection $db,
 		private Principal $principalBackend,
 		private IUserManager $userManager,
-		IGroupManager $groupManager,
 		private ISecureRandom $random,
 		private LoggerInterface $logger,
 		private IEventDispatcher $dispatcher,
 		private IConfig $config,
 		private bool $legacyEndpoint = false,
-	) {
-		$this->calendarSharingBackend = new Backend($this->db, $this->userManager, $groupManager, $principalBackend, 'calendar');
-	}
+		private Backend $calendarSharingBackend,
+	) {}
 
 	/**
 	 * Return the number of calendars for a principal
@@ -2975,7 +2973,8 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 	 * @return list<array{privilege: string, principal: string, protected: bool}>
 	 */
 	public function applyShareAcl(int $resourceId, array $acl): array {
-		return $this->calendarSharingBackend->applyShareAcl($resourceId, $acl);
+		$shares = $this->calendarSharingBackend->getShares($resourceId);
+		return $this->calendarSharingBackend->applyShareAcl($shares, $acl);
 	}
 
 	/**

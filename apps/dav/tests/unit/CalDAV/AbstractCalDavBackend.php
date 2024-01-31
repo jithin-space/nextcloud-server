@@ -31,6 +31,7 @@ use OC\KnownUser\KnownUserService;
 use OCA\DAV\CalDAV\CalDavBackend;
 use OCA\DAV\CalDAV\Proxy\ProxyMapper;
 use OCA\DAV\Connector\Sabre\Principal;
+use OCA\DAV\DAV\Sharing\Backend;
 use OCP\Accounts\IAccountManager;
 use OCP\App\IAppManager;
 use OCP\EventDispatcher\IEventDispatcher;
@@ -81,6 +82,8 @@ abstract class AbstractCalDavBackend extends TestCase {
 	public const UNIT_TEST_GROUP = 'principals/groups/caldav-unit-test-group';
 	public const UNIT_TEST_GROUP2 = 'principals/groups/caldav-unit-test-group2';
 
+	private MockObject|Backend $sharingBackend;
+
 	protected function setUp(): void {
 		parent::setUp();
 
@@ -115,15 +118,17 @@ abstract class AbstractCalDavBackend extends TestCase {
 		$this->random = \OC::$server->getSecureRandom();
 		$this->logger = $this->createMock(LoggerInterface::class);
 		$this->config = $this->createMock(IConfig::class);
+		$this->sharingBackend = $this->createMock(Backend::class);
 		$this->backend = new CalDavBackend(
 			$db,
 			$this->principal,
 			$this->userManager,
-			$this->groupManager,
 			$this->random,
 			$this->logger,
 			$this->dispatcher,
-			$this->config
+			$this->config,
+			false,
+			$this->sharingBackend,
 		);
 
 		$this->cleanUpBackend();
