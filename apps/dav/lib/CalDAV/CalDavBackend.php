@@ -385,7 +385,7 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 				->join('s', 'calendars', 'a', $select->expr()->eq('s.resourceid', 'a.id'))
 				->where($select->expr()->in('s.principaluri', $select->createNamedParameter($principals, IQueryBuilder::PARAM_STR_ARRAY)))
 				->andWhere($select->expr()->eq('s.type', $select->createNamedParameter('calendar', IQueryBuilder::PARAM_STR)))
-				->andWhere($select->expr()->notIn('a.id', $select->createFunction('(' . $subSelect->getSQL() . ')'),IQueryBuilder::PARAM_INT_ARRAY));
+				->andWhere($select->expr()->notIn('a.id', $select->createFunction('(' . $subSelect->getSQL() . ')'), IQueryBuilder::PARAM_INT_ARRAY));
 
 			$results = $select->executeQuery();
 			$shared = $results->fetchAll();

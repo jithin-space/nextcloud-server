@@ -49,7 +49,7 @@ class Backend {
 	public const ACCESS_READ_WRITE = 2;
 	public const ACCESS_READ = 3;
 	// 4 is already in use for public calendars
-	const ACCESS_UNSHARED = 5;
+	public const ACCESS_UNSHARED = 5;
 
 	private CappedMemoryCache $shareCache;
 

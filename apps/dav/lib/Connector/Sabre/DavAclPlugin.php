@@ -26,6 +26,7 @@
  */
 namespace OCA\DAV\Connector\Sabre;
 
+use OCA\DAV\CalDAV\Calendar;
 use OCA\DAV\CardDAV\AddressBook;
 use Sabre\CalDAV\Principal\User;
 use Sabre\DAV\Exception\NotFound;
