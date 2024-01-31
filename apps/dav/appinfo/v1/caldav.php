@@ -69,7 +69,8 @@ $sharingBackend = new \OCA\DAV\DAV\Sharing\Backend(
 	$db,
 	$userManager,
 	\OC::$server->get(\OCP\IGroupManager::class),
-	$principalBackend, 'calendar',
+	$principalBackend,
+	'calendar',
 	\OC::$server->get(\OCP\ICacheFactory::class),
 	\OC::$server->get(\OCA\DAV\DAV\Sharing\SharingService::class),
 	$logger

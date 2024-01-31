@@ -80,7 +80,7 @@ class RootCollection extends SimpleCollection {
 			\OC::$server->getConfig(),
 			\OC::$server->getL10NFactory()
 		);
-		$sharingBackend = new \OCA\DAV\DAV\Sharing\Backend(
+		$calendarSharingBackend = new \OCA\DAV\DAV\Sharing\Backend(
 			$db,
 			$userManager,
 			\OC::$server->get(\OCP\IGroupManager::class),
@@ -121,7 +121,7 @@ class RootCollection extends SimpleCollection {
 			$dispatcher,
 			$config,
 			false,
-			$sharingBackend,
+			$calendarSharingBackend,
 		);
 		$userCalendarRoot = new CalendarRoot($userPrincipalBackend, $caldavBackend, 'principals/users', $logger);
 		$userCalendarRoot->disableListing = $disableListing;
@@ -154,13 +154,24 @@ class RootCollection extends SimpleCollection {
 			$logger
 		);
 
+		$contactsSharingBackend = new \OCA\DAV\DAV\Sharing\Backend(
+			$db,
+			$userManager,
+			\OC::$server->get(\OCP\IGroupManager::class),
+			$userPrincipalBackend,
+			'addressbook',
+			\OC::$server->get(\OCP\ICacheFactory::class),
+			\OC::$server->get(\OCA\DAV\DAV\Sharing\SharingService::class),
+			$logger
+		);
+
 		$pluginManager = new PluginManager(\OC::$server, \OC::$server->query(IAppManager::class));
 		$usersCardDavBackend = new CardDavBackend(
 			$db,
 			$userPrincipalBackend,
 			$userManager,
 			$dispatcher,
-			$sharingBackend,
+			$contactsSharingBackend,
 		);
 		$usersAddressBookRoot = new AddressBookRoot($userPrincipalBackend, $usersCardDavBackend, $pluginManager, $userSession->getUser(), $groupManager, 'principals/users');
 		$usersAddressBookRoot->disableListing = $disableListing;
@@ -170,7 +181,7 @@ class RootCollection extends SimpleCollection {
 			$userPrincipalBackend,
 			$userManager,
 			$dispatcher,
-			$sharingBackend,
+			$contactsSharingBackend,
 		);
 		$systemAddressBookRoot = new AddressBookRoot(new SystemPrincipalBackend(), $systemCardDavBackend, $pluginManager, $userSession->getUser(), $groupManager, 'principals/system');
 		$systemAddressBookRoot->disableListing = $disableListing;
