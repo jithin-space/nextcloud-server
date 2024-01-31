@@ -54,7 +54,7 @@ class Backend {
 		private IUserManager $userManager,
 		private IGroupManager $groupManager,
 		private Principal $principalBackend,
-		private readonly string $resourceType,
+		private string $resourceType,
 		private ICacheFactory $cacheFactory,
 		private SharingService $service,
 		private LoggerInterface $logger,
