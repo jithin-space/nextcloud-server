@@ -23,7 +23,7 @@ declare(strict_types=1);
 namespace OCA\DAV\DAV\Sharing;
 
 class SharingService {
-	private string $resourceType;
+	private string $resourceType = '';
 	public function __construct(private SharingMapper $mapper) {
 	}
 
