@@ -70,14 +70,9 @@ class SharingService {
 	 * @return bool
 	 */
 	public function hasGroupShare(array $oldShares): bool {
-		$group = false;
-		foreach ($oldShares as $share) {
-			if($share['{http://owncloud.org/ns}group-share'] === true) {
-				$group = true;
-				break;
-			}
-		}
-		return $group;
+		return !empty(array_filter($oldShares, function (array $share) {
+			return $share['{http://owncloud.org/ns}group-share'] === true;
+		}));
 	}
 
 	public function getPrincipal(IShareable $shareable, $element): ?string {
