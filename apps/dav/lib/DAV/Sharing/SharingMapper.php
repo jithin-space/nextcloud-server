@@ -73,7 +73,7 @@ class SharingMapper extends QBMapper {
 		$query->executeStatement();
 	}
 
-	public function share(int $resourceId, string $resourceType, int $access, sting $principal): void {
+	public function share(int $resourceId, string $resourceType, int $access, string $principal): void {
 		$query = $this->db->getQueryBuilder();
 		$query->insert('dav_shares')
 			->values([
@@ -97,19 +97,19 @@ class SharingMapper extends QBMapper {
 
 	}
 
-	public function deleteAllShares(int $resourceId): void {
+	public function deleteAllShares(int $resourceId, string $resourceType): void {
 		$query = $this->db->getQueryBuilder();
 		$query->delete('dav_shares')
 			->where($query->expr()->eq('resourceid', $query->createNamedParameter($resourceId)))
-			->andWhere($query->expr()->eq('type', $query->createNamedParameter($this->resourceType)))
+			->andWhere($query->expr()->eq('type', $query->createNamedParameter($resourceType)))
 			->executeStatement();
 	}
 
-	public function deleteAllSharesByUser(string $principaluri): void {
+	public function deleteAllSharesByUser(string $principaluri, string $resourceType): void {
 		$query = $this->db->getQueryBuilder();
 		$query->delete('dav_shares')
 			->where($query->expr()->eq('principaluri', $query->createNamedParameter($principaluri)))
-			->andWhere($query->expr()->eq('type', $query->createNamedParameter($this->resourceType)))
+			->andWhere($query->expr()->eq('type', $query->createNamedParameter($resourceType)))
 			->executeStatement();
 	}
 }

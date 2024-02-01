@@ -50,7 +50,6 @@ abstract class Backend {
 	public const ACCESS_UNSHARED = 5;
 
 	private ICache $shareCache;
-	private string $resourceType;
 
 	public function __construct(private IDBConnection $db,
 		private IUserManager $userManager,
@@ -76,7 +75,7 @@ abstract class Backend {
 					continue;
 				}
 
-				$shareePrincipal = $this->service->getPrincipal($shareable, $element);
+				$shareePrincipal = $this->service->getPrincipal($shareable, $element['href']);
 				if(empty($shareePrincipal)) {
 					continue;
 				}
@@ -96,7 +95,12 @@ abstract class Backend {
 					continue;
 				}
 
-				$this->service->shareWith($shareable, $principal);
+				$access = Backend::ACCESS_READ;
+				if (isset($element['readOnly'])) {
+					$access = $element['readOnly'] ? Backend::ACCESS_READ : Backend::ACCESS_READ_WRITE;
+				}
+
+				$this->service->shareWith($shareable->getResourceId(), $principal, $access);
 			}
 			foreach ($remove as $element) {
 				$principal = $this->principalBackend->findByUri($element, '');
@@ -110,14 +114,14 @@ abstract class Backend {
 				}
 
 				// Delete any possible direct shares (since the frontend does not separate between them)
-				$this->service->deleteShare($shareable, $shareePrincipal);
+				$this->service->deleteShare($shareable->getResourceId(), $shareePrincipal);
 
 				// Check if a user has a groupshare that they're trying to free themselves from
 				// If so we need to add a self::ACCESS_UNSHARED row
 				if(!str_contains($principal, 'group')
 					&& $this->service->hasGroupShare($oldShares)
 				) {
-					$this->service->unshare($shareable, $shareePrincipal);
+					$this->service->unshare($shareable->getResourceId(), $shareePrincipal);
 				}
 			}
 		}, $this->db);

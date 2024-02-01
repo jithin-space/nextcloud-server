@@ -27,7 +27,7 @@ class SharingService {
 	public function __construct(private SharingMapper $mapper) {
 	}
 
-	public function setResourceType(string $resourceType) {
+	public function setResourceType(string $resourceType): void {
 		$this->resourceType = $resourceType;
 	}
 
@@ -35,37 +35,33 @@ class SharingService {
 		return $this->resourceType;
 	}
 
-	public function shareWith(IShareable $shareable, string $principal): void {
+	public function shareWith(int $resourceId, string $principal, int $access): void {
 		// remove the share if it already exists
-		$this->mapper->deleteShare($shareable->getResourceId(), $this->getResourceType(), $principal);
-		$access = Backend::ACCESS_READ;
-		if (isset($element['readOnly'])) {
-			$access = $element['readOnly'] ? Backend::ACCESS_READ : Backend::ACCESS_READ_WRITE;
-		}
-		$this->mapper->share($shareable->getResourceId(), $this->getResourceType(), $access, $principal);
+		$this->mapper->deleteShare($resourceId, $this->getResourceType(), $principal);
+		$this->mapper->share($resourceId, $this->getResourceType(), $access, $principal);
 	}
 
-	public function unshare(IShareable $shareable, string $principal): void {
-		$this->mapper->unshare($shareable->getResourceId(), $this->getResourceType(), $principal);
+	public function unshare(int $resourceId, string $principal): void {
+		$this->mapper->unshare($resourceId, $this->getResourceType(), $principal);
 	}
 
-	public function deleteShare(IShareable $shareable, string $principal): void {
-		$this->mapper->deleteShare($shareable->getResourceId(), $this->getResourceType(), $principal);
+	public function deleteShare(int $resourceId, string $principal): void {
+		$this->mapper->deleteShare($resourceId, $this->getResourceType(), $principal);
 	}
 
 	public function deleteAllShares(int $resourceId): void {
-		$this->mapper->deleteAllShares($resourceId);
+		$this->mapper->deleteAllShares($resourceId, $this->getResourceType());
 	}
 
 	public function deleteAllSharesByUser(string $principaluri): void {
-		$this->mapper->deleteAllSharesByUser($principaluri);
+		$this->mapper->deleteAllSharesByUser($principaluri, $this->getResourceType());
 	}
 
-	public function getShares(int $resourceId) {
+	public function getShares(int $resourceId): array {
 		return $this->mapper->getSharesForId($resourceId, $this->getResourceType());
 	}
 
-	public function getSharesForIds(array $resourceIds) {
+	public function getSharesForIds(array $resourceIds): array {
 		return $this->mapper->getSharesForIds($resourceIds, $this->getResourceType());
 	}
 
