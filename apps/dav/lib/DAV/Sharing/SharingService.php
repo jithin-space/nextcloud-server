@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*
@@ -23,7 +24,8 @@ namespace OCA\DAV\DAV\Sharing;
 
 class SharingService {
 	private string $resourceType;
-	public function __construct(private SharingMapper $mapper) {}
+	public function __construct(private SharingMapper $mapper) {
+	}
 
 	public function setResourceType(string $resourceType) {
 		$this->resourceType = $resourceType;
@@ -63,6 +65,10 @@ class SharingService {
 		return $this->mapper->getSharesForId($resourceId, $this->getResourceType());
 	}
 
+	public function getSharesForIds(array $resourceIds) {
+		return $this->mapper->getSharesForIds($resourceIds, $this->getResourceType());
+	}
+
 	/**
 	 * @param array $oldShares
 	 * @return bool
@@ -92,4 +98,3 @@ class SharingService {
 	}
 
 }
-

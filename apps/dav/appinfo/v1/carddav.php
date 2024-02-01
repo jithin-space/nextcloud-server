@@ -64,22 +64,12 @@ $principalBackend = new Principal(
 	'principals/'
 );
 $db = \OC::$server->getDatabaseConnection();
-$sharingBackend = new \OCA\DAV\DAV\Sharing\Backend(
-	$db,
-	\OC::$server->get(\OCP\IUserManager::class),
-	\OC::$server->get(\OCP\IGroupManager::class),
-	$principalBackend,
-	'addressbook',
-	\OC::$server->get(\OCP\ICacheFactory::class),
-	\OC::$server->get(\OCA\DAV\DAV\Sharing\SharingService::class),
-	\OC::$server->get(LoggerInterface::class),
-);
 $cardDavBackend = new CardDavBackend(
 	$db,
 	$principalBackend,
 	\OC::$server->getUserManager(),
 	\OC::$server->get(\OCP\EventDispatcher\IEventDispatcher::class),
-	$sharingBackend,
+	\OC::$server->get(\OCA\DAV\CardDAV\Sharing\Backend::class),
 );
 
 $debugging = \OC::$server->getConfig()->getSystemValue('debug', false);

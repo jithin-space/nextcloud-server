@@ -65,16 +65,6 @@ $logger = \OC::$server->get(LoggerInterface::class);
 $dispatcher = \OC::$server->get(\OCP\EventDispatcher\IEventDispatcher::class);
 $config = \OC::$server->get(\OCP\IConfig::class);
 
-$sharingBackend = new \OCA\DAV\DAV\Sharing\Backend(
-	$db,
-	$userManager,
-	\OC::$server->get(\OCP\IGroupManager::class),
-	$principalBackend,
-	'calendar',
-	\OC::$server->get(\OCP\ICacheFactory::class),
-	\OC::$server->get(\OCA\DAV\DAV\Sharing\SharingService::class),
-	$logger
-);
 $calDavBackend = new CalDavBackend(
 	$db,
 	$principalBackend,
@@ -83,8 +73,8 @@ $calDavBackend = new CalDavBackend(
 	$logger,
 	$dispatcher,
 	$config,
-	true,
-	$sharingBackend
+	OC::$server->get(\OCA\DAV\CalDAV\Sharing\Backend::class),
+	true
 );
 
 $debugging = \OC::$server->getConfig()->getSystemValue('debug', false);

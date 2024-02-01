@@ -46,8 +46,6 @@ use OCA\DAV\Capabilities;
 use OCA\DAV\CardDAV\ContactsManager;
 use OCA\DAV\CardDAV\PhotoCache;
 use OCA\DAV\CardDAV\SyncService;
-use OCA\DAV\DAV\Sharing\SharingMapper;
-use OCA\DAV\DAV\Sharing\SharingService;
 use OCA\DAV\Events\AddressBookCreatedEvent;
 use OCA\DAV\Events\AddressBookDeletedEvent;
 use OCA\DAV\Events\AddressBookShareUpdatedEvent;

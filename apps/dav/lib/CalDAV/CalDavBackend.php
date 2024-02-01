@@ -42,10 +42,9 @@ namespace OCA\DAV\CalDAV;
 use DateTime;
 use DateTimeInterface;
 use OCA\DAV\AppInfo\Application;
+use OCA\DAV\CalDAV\Sharing\Backend;
 use OCA\DAV\Connector\Sabre\Principal;
-use OCA\DAV\DAV\Sharing\Backend;
 use OCA\DAV\DAV\Sharing\IShareable;
-use OCA\DAV\DAV\Sharing\SharingService;
 use OCA\DAV\Events\CachedCalendarObjectCreatedEvent;
 use OCA\DAV\Events\CachedCalendarObjectDeletedEvent;
 use OCA\DAV\Events\CachedCalendarObjectUpdatedEvent;
@@ -73,7 +72,6 @@ use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\IConfig;
 use OCP\IDBConnection;
-use OCP\IGroupManager;
 use OCP\IUserManager;
 use OCP\Security\ISecureRandom;
 use Psr\Log\LoggerInterface;
@@ -220,9 +218,10 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 		private LoggerInterface $logger,
 		private IEventDispatcher $dispatcher,
 		private IConfig $config,
+		private Sharing\Backend $calendarSharingBackend,
 		private bool $legacyEndpoint = false,
-		private Backend $calendarSharingBackend,
-	) {}
+	) {
+	}
 
 	/**
 	 * Return the number of calendars for a principal

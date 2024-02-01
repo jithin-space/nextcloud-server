@@ -37,6 +37,7 @@ use OCA\DAV\CalDAV\Proxy\ProxyMapper;
 use OCA\DAV\CalDAV\PublicCalendarRoot;
 use OCA\DAV\CalDAV\ResourceBooking\ResourcePrincipalBackend;
 use OCA\DAV\CalDAV\ResourceBooking\RoomPrincipalBackend;
+use OCA\DAV\CalDAV\Sharing\Backend;
 use OCA\DAV\CardDAV\AddressBookRoot;
 use OCA\DAV\CardDAV\CardDavBackend;
 use OCA\DAV\Connector\Sabre\Principal;
@@ -80,16 +81,6 @@ class RootCollection extends SimpleCollection {
 			\OC::$server->getConfig(),
 			\OC::$server->getL10NFactory()
 		);
-		$calendarSharingBackend = new \OCA\DAV\DAV\Sharing\Backend(
-			$db,
-			$userManager,
-			\OC::$server->get(\OCP\IGroupManager::class),
-			$userPrincipalBackend,
-			'calendar',
-			\OC::$server->get(\OCP\ICacheFactory::class),
-			\OC::$server->get(\OCA\DAV\DAV\Sharing\SharingService::class),
-			$logger
-		);
 
 		$groupPrincipalBackend = new GroupPrincipalBackend($groupManager, $userSession, $shareManager, $config);
 		$calendarResourcePrincipalBackend = new ResourcePrincipalBackend($db, $userSession, $groupManager, $logger, $proxyMapper);
@@ -108,7 +99,7 @@ class RootCollection extends SimpleCollection {
 		$calendarResourcePrincipals->disableListing = $disableListing;
 		$calendarRoomPrincipals = new Collection($calendarRoomPrincipalBackend, 'principals/calendar-rooms');
 		$calendarRoomPrincipals->disableListing = $disableListing;
-
+		$calendarSharingBackend = \OC::$server->get(Backend::class);
 
 		$filesCollection = new Files\RootCollection($userPrincipalBackend, 'principals/users');
 		$filesCollection->disableListing = $disableListing;
@@ -120,8 +111,8 @@ class RootCollection extends SimpleCollection {
 			$logger,
 			$dispatcher,
 			$config,
-			false,
 			$calendarSharingBackend,
+			false,
 		);
 		$userCalendarRoot = new CalendarRoot($userPrincipalBackend, $caldavBackend, 'principals/users', $logger);
 		$userCalendarRoot->disableListing = $disableListing;
@@ -154,16 +145,7 @@ class RootCollection extends SimpleCollection {
 			$logger
 		);
 
-		$contactsSharingBackend = new \OCA\DAV\DAV\Sharing\Backend(
-			$db,
-			$userManager,
-			\OC::$server->get(\OCP\IGroupManager::class),
-			$userPrincipalBackend,
-			'addressbook',
-			\OC::$server->get(\OCP\ICacheFactory::class),
-			\OC::$server->get(\OCA\DAV\DAV\Sharing\SharingService::class),
-			$logger
-		);
+		$contactsSharingBackend = \OC::$server->get(\OCA\DAV\CardDAV\Sharing\Backend::class);
 
 		$pluginManager = new PluginManager(\OC::$server, \OC::$server->query(IAppManager::class));
 		$usersCardDavBackend = new CardDavBackend(

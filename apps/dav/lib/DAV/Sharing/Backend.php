@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 /**
  * @copyright Copyright (c) 2016, ownCloud, Inc.
@@ -39,7 +40,7 @@ use OCP\IGroupManager;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
 
-class Backend {
+abstract class Backend {
 	use TTransactional;
 	public const ACCESS_OWNER = 1;
 
@@ -49,18 +50,17 @@ class Backend {
 	public const ACCESS_UNSHARED = 5;
 
 	private ICache $shareCache;
+	private string $resourceType;
 
 	public function __construct(private IDBConnection $db,
 		private IUserManager $userManager,
 		private IGroupManager $groupManager,
 		private Principal $principalBackend,
-		private string $resourceType,
 		private ICacheFactory $cacheFactory,
 		private SharingService $service,
 		private LoggerInterface $logger,
 	) {
 		$this->shareCache = $this->cacheFactory->createInMemory();
-		$this->service->setResourceType($this->resourceType);
 	}
 
 	/**
@@ -151,7 +151,7 @@ class Backend {
 			return $cached;
 		}
 
-		$rows = $this->service->getShares();
+		$rows = $this->service->getShares($resourceId);
 		$shares = [];
 		foreach($rows as $row) {
 			$p = $this->principalBackend->getPrincipalByPath($row['principaluri']);
@@ -175,8 +175,8 @@ class Backend {
 		if (count($resourceIds) === 0) {
 			return;
 		}
-		$rows = $this->service->getSharesForIds($resourceIds, $this->service->getResourceType());
 
+		$rows = $this->service->getSharesForIds($resourceIds);
 		$sharesByResource = array_fill_keys($resourceIds, []);
 		foreach($rows as $row) {
 			$resourceId = (int)$row['resourceid'];

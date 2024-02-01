@@ -39,7 +39,6 @@ use OC\Search\Filter\DateTimeFilter;
 use OCA\DAV\Connector\Sabre\Principal;
 use OCA\DAV\DAV\Sharing\Backend;
 use OCA\DAV\DAV\Sharing\IShareable;
-use OCA\DAV\DAV\Sharing\SharingService;
 use OCA\DAV\Events\AddressBookCreatedEvent;
 use OCA\DAV\Events\AddressBookDeletedEvent;
 use OCA\DAV\Events\AddressBookShareUpdatedEvent;
@@ -52,9 +51,7 @@ use OCP\AppFramework\Db\TTransactional;
 use OCP\DB\Exception;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\EventDispatcher\IEventDispatcher;
-use OCP\ICacheFactory;
 use OCP\IDBConnection;
-use OCP\IGroupManager;
 use OCP\IUserManager;
 use PDO;
 use Sabre\CardDAV\Backend\BackendInterface;
@@ -66,7 +63,6 @@ use Sabre\VObject\Reader;
 
 class CardDavBackend implements BackendInterface, SyncSupport {
 	use TTransactional;
-
 	public const PERSONAL_ADDRESSBOOK_URI = 'contacts';
 	public const PERSONAL_ADDRESSBOOK_NAME = 'Contacts';
 
@@ -85,12 +81,14 @@ class CardDavBackend implements BackendInterface, SyncSupport {
 	protected array $userDisplayNames;
 	private array $etagCache = [];
 
-	public function __construct(private IDBConnection $db,
+	public function __construct(
+		private IDBConnection $db,
 		private Principal $principalBackend,
 		private IUserManager $userManager,
 		private IEventDispatcher $dispatcher,
-		private Backend $sharingBackend,
-	) {}
+		private Sharing\Backend $sharingBackend,
+	) {
+	}
 
 	/**
 	 * Return the number of address books for a principal
