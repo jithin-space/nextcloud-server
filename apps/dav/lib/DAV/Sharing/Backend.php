@@ -150,7 +150,7 @@ abstract class Backend {
 	 * @return list<array{href: string, commonName: string, status: int, readOnly: bool, '{http://owncloud.org/ns}principal': string, '{http://owncloud.org/ns}group-share': bool}>
 	 */
 	public function getShares(int $resourceId): array {
-		$cached = $this->shareCache->get($resourceId);
+		$cached = $this->shareCache->get((string)$resourceId);
 		if ($cached) {
 			return $cached;
 		}
