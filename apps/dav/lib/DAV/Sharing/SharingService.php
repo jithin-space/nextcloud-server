@@ -75,8 +75,13 @@ class SharingService {
 		}));
 	}
 
-	public function getPrincipal(IShareable $shareable, $element): ?string {
-		$parts = explode(':', $element, 2);
+	public function getPrincipal(IShareable $shareable, string $href): ?string {
+		$parts = explode(':', $href, 2);
+		// something is wrong with the href
+		if(count($parts) !== 2) {
+			return null;
+		}
+
 		if ($parts[0] !== 'principal') {
 			return null;
 		}

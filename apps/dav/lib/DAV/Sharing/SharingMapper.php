@@ -26,9 +26,8 @@ use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
-class SharingMapper extends QBMapper {
+class SharingMapper {
 	public function __construct(IDBConnection $db) {
-		parent::__construct($db, 'dav_shares');
 	}
 
 	public function getSharesForId(int $resourceId, string $resourceType): array {
