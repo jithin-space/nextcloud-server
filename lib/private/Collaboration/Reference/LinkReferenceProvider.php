@@ -5,6 +5,7 @@ declare(strict_types=1);
  * @copyright Copyright (c) 2022 Julius Härtl <jus@bitgrid.net>
  *
  * @author Julius Härtl <jus@bitgrid.net>
+ * @author Anupam Kumar <kyteinsky@gmail.com>
  *
  * @license GNU AGPL version 3 or any later version
  *
@@ -43,7 +44,7 @@ use OCP\IUserSession;
 use Psr\Log\LoggerInterface;
 
 class LinkReferenceProvider implements IReferenceProvider {
-	public const MAX_PREVIEW_SIZE = 1024 * 1024;
+	public const MAX_CONTENT_LENGTH = 5* 1024 * 1024;
 
 	public const ALLOWED_CONTENT_TYPES = [
 		'image/png',
@@ -103,20 +104,22 @@ class LinkReferenceProvider implements IReferenceProvider {
 			$this->logger->debug('Failed to perform HEAD request to get target metadata', ['exception' => $e]);
 			return;
 		}
+
 		$linkContentLength = $headResponse->getHeader('Content-Length');
-		if (is_numeric($linkContentLength) && (int) $linkContentLength > 5 * 1024 * 1024) {
-			$this->logger->debug('Skip resolving links pointing to content length > 5 MB');
+		if (is_numeric($linkContentLength) && (int) $linkContentLength > self::MAX_CONTENT_LENGTH) {
+			$this->logger->debug('Skip resolving links pointing to content length > 5 MiB');
 			return;
 		}
+
 		$linkContentType = $headResponse->getHeader('Content-Type');
-		$expectedContentType = 'text/html';
-		$suffixedExpectedContentType = $expectedContentType . ';';
-		$startsWithSuffixed = str_starts_with($linkContentType, $suffixedExpectedContentType);
+		$expectedContentTypeRegex = '/^text\/html;?/i';
+
 		// check the header begins with the expected content type
-		if ($linkContentType !== $expectedContentType && !$startsWithSuffixed) {
+		if (!preg_match($expectedContentTypeRegex, $linkContentType)) {
 			$this->logger->debug('Skip resolving links pointing to content type that is not "text/html"');
 			return;
 		}
+
 		try {
 			$response = $client->get($reference->getId(), [ 'timeout' => 10 ]);
 		} catch (\Exception $e) {
@@ -146,24 +149,26 @@ class LinkReferenceProvider implements IReferenceProvider {
 				$host = parse_url($object->images[0]->url, PHP_URL_HOST);
 				if ($host === false || $host === null) {
 					$this->logger->warning('Could not detect host of open graph image URI for ' . $reference->getId());
-				} else {
-					$appData = $this->appDataFactory->get('core');
-					try {
-						$folder = $appData->getFolder('opengraph');
-					} catch (NotFoundException $e) {
-						$folder = $appData->newFolder('opengraph');
-					}
-					$response = $client->get($object->images[0]->url, ['timeout' => 10]);
-					$contentType = $response->getHeader('Content-Type');
-					$contentLength = $response->getHeader('Content-Length');
+					return;
+				}
 
-					if (in_array($contentType, self::ALLOWED_CONTENT_TYPES, true) && $contentLength < self::MAX_PREVIEW_SIZE) {
-						$stream = Utils::streamFor($response->getBody());
-						$bodyStream = new LimitStream($stream, self::MAX_PREVIEW_SIZE, 0);
-						$reference->setImageContentType($contentType);
-						$folder->newFile(md5($reference->getId()), $bodyStream->getContents());
-						$reference->setImageUrl($this->urlGenerator->linkToRouteAbsolute('core.Reference.preview', ['referenceId' => md5($reference->getId())]));
-					}
+				$appData = $this->appDataFactory->get('core');
+				try {
+					$folder = $appData->getFolder('opengraph');
+				} catch (NotFoundException $e) {
+					$folder = $appData->newFolder('opengraph');
+				}
+
+				$response = $client->get($object->images[0]->url, ['timeout' => 10]);
+				$contentType = $response->getHeader('Content-Type');
+				$contentLength = $response->getHeader('Content-Length');
+
+				if (in_array($contentType, self::ALLOWED_CONTENT_TYPES, true) && $contentLength < self::MAX_CONTENT_LENGTH) {
+					$stream = Utils::streamFor($response->getBody());
+					$bodyStream = new LimitStream($stream, self::MAX_CONTENT_LENGTH, 0);
+					$reference->setImageContentType($contentType);
+					$folder->newFile(md5($reference->getId()), $bodyStream->getContents());
+					$reference->setImageUrl($this->urlGenerator->linkToRouteAbsolute('core.Reference.preview', ['referenceId' => md5($reference->getId())]));
 				}
 			} catch (GuzzleException $e) {
 				$this->logger->info('Failed to fetch and store the open graph image for ' . $reference->getId(), ['exception' => $e]);
