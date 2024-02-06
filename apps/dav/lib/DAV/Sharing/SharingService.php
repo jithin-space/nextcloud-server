@@ -74,23 +74,4 @@ class SharingService {
 			return $share['{http://owncloud.org/ns}group-share'] === true;
 		}));
 	}
-
-	public function getPrincipal(IShareable $shareable, string $href): ?string {
-		$parts = explode(':', $href, 2);
-		// something is wrong with the href
-		if(count($parts) !== 2) {
-			return null;
-		}
-
-		if ($parts[0] !== 'principal') {
-			return null;
-		}
-
-		// don't share with owner
-		if ($shareable->getOwner() === $parts[1]) {
-			return null;
-		}
-		return $parts[1];
-	}
-
 }

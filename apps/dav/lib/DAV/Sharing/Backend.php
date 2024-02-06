@@ -35,7 +35,6 @@ use OCA\DAV\Connector\Sabre\Principal;
 use OCP\AppFramework\Db\TTransactional;
 use OCP\ICache;
 use OCP\ICacheFactory;
-use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
@@ -51,8 +50,7 @@ abstract class Backend {
 
 	private ICache $shareCache;
 
-	public function __construct(private IDBConnection $db,
-		private IUserManager $userManager,
+	public function __construct(private IUserManager $userManager,
 		private IGroupManager $groupManager,
 		private Principal $principalBackend,
 		private ICacheFactory $cacheFactory,
@@ -68,63 +66,61 @@ abstract class Backend {
 	 */
 	public function updateShares(IShareable $shareable, array $add, array $remove, array $oldShares = []): void {
 		$this->shareCache->clear();
-		$this->atomic(function () use ($shareable, $add, $remove, $oldShares) {
-			foreach ($add as $element) {
-				$principal = $this->principalBackend->findByUri($element['href'], '');
-				if ($principal === '') {
-					continue;
-				}
-
-				$shareePrincipal = $this->service->getPrincipal($shareable, $element['href']);
-				if(empty($shareePrincipal)) {
-					continue;
-				}
-
-				// We need to validate manually because some principals are only virtual
-				// i.e. Group principals
-				$principalparts = explode('/', $shareePrincipal, 3);
-				if (count($principalparts) !== 3 || $principalparts[0] !== 'principals' || !in_array($principalparts[1], ['users', 'groups', 'circles'], true)) {
-					// Invalid principal
-					continue;
-				}
-
-				$principalparts[2] = urldecode($principalparts[2]);
-				if (($principalparts[1] === 'users' && !$this->userManager->userExists($principalparts[2])) ||
-					($principalparts[1] === 'groups' && !$this->groupManager->groupExists($principalparts[2]))) {
-					// User or group does not exist
-					continue;
-				}
-
-				$access = Backend::ACCESS_READ;
-				if (isset($element['readOnly'])) {
-					$access = $element['readOnly'] ? Backend::ACCESS_READ : Backend::ACCESS_READ_WRITE;
-				}
-
-				$this->service->shareWith($shareable->getResourceId(), $principal, $access);
+		foreach ($add as $element) {
+			$principal = $this->principalBackend->findByUri($element['href'], '');
+			if (empty($principal)) {
+				continue;
 			}
-			foreach ($remove as $element) {
-				$principal = $this->principalBackend->findByUri($element, '');
-				if ($principal === '') {
-					continue;
-				}
 
-				$shareePrincipal = $this->service->getPrincipal($shareable, $element);
-				if(empty($shareePrincipal)) {
-					continue;
-				}
-
-				// Delete any possible direct shares (since the frontend does not separate between them)
-				$this->service->deleteShare($shareable->getResourceId(), $shareePrincipal);
-
-				// Check if a user has a groupshare that they're trying to free themselves from
-				// If so we need to add a self::ACCESS_UNSHARED row
-				if(!str_contains($principal, 'group')
-					&& $this->service->hasGroupShare($oldShares)
-				) {
-					$this->service->unshare($shareable->getResourceId(), $shareePrincipal);
-				}
+			// We need to validate manually because some principals are only virtual
+			// i.e. Group principals
+			$principalparts = explode('/', $principal, 3);
+			if (count($principalparts) !== 3 || $principalparts[0] !== 'principals' || !in_array($principalparts[1], ['users', 'groups', 'circles'], true)) {
+				// Invalid principal
+				continue;
 			}
-		}, $this->db);
+
+			// Don't add share for owner
+			if(strcasecmp($shareable->getOwner(), $principal) === 0) {
+				continue;
+			}
+
+			$principalparts[2] = urldecode($principalparts[2]);
+			if (($principalparts[1] === 'users' && !$this->userManager->userExists($principalparts[2])) ||
+				($principalparts[1] === 'groups' && !$this->groupManager->groupExists($principalparts[2]))) {
+				// User or group does not exist
+				continue;
+			}
+
+			$access = Backend::ACCESS_READ;
+			if (isset($element['readOnly'])) {
+				$access = $element['readOnly'] ? Backend::ACCESS_READ : Backend::ACCESS_READ_WRITE;
+			}
+
+			$this->service->shareWith($shareable->getResourceId(), $principal, $access);
+		}
+		foreach ($remove as $element) {
+			$principal = $this->principalBackend->findByUri($element, '');
+			if (empty($principal)) {
+				continue;
+			}
+
+			// Don't add unshare for owner
+			if(strcasecmp($shareable->getOwner(), $principal) === 0) {
+				continue;
+			}
+
+			// Delete any possible direct shares (since the frontend does not separate between them)
+			$this->service->deleteShare($shareable->getResourceId(), $principal);
+
+			// Check if a user has a groupshare that they're trying to free themselves from
+			// If so we need to add a self::ACCESS_UNSHARED row
+			if(!str_contains($principal, 'group')
+				&& $this->service->hasGroupShare($oldShares)
+			) {
+				$this->service->unshare($shareable->getResourceId(), $principal);
+			}
+		}
 	}
 
 	public function deleteAllShares(int $resourceId): void {
@@ -174,9 +170,9 @@ abstract class Backend {
 
 	public function preloadShares(array $resourceIds): void {
 		$resourceIds = array_filter($resourceIds, function (int $resourceId) {
-			return !isset($this->shareCache[$resourceId]);
+			return empty($this->shareCache->get($resourceId));
 		});
-		if (count($resourceIds) === 0) {
+		if (empty($resourceIds)) {
 			return;
 		}
 

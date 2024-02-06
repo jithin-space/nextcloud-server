@@ -22,12 +22,11 @@ declare(strict_types=1);
 
 namespace OCA\DAV\DAV\Sharing;
 
-use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
 class SharingMapper {
-	public function __construct(IDBConnection $db) {
+	public function __construct(private IDBConnection $db) {
 	}
 
 	public function getSharesForId(int $resourceId, string $resourceType): array {

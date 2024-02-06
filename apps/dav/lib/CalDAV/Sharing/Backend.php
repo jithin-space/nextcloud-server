@@ -25,22 +25,20 @@ namespace OCA\DAV\CalDAV\Sharing;
 use OCA\DAV\Connector\Sabre\Principal;
 use OCA\DAV\DAV\Sharing\SharingService;
 use OCP\ICacheFactory;
-use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
 
 class Backend extends \OCA\DAV\DAV\Sharing\Backend {
 
-	public function __construct(private IDBConnection $db,
-		private IUserManager $userManager,
+	public function __construct(private IUserManager $userManager,
 		private IGroupManager $groupManager,
 		private Principal $principalBackend,
 		private ICacheFactory $cacheFactory,
 		private SharingService $service,
 		private LoggerInterface $logger,
 	) {
-		parent::__construct($this->db, $this->userManager, $this->groupManager, $this->principalBackend, $this->cacheFactory, $this->service, $this->logger);
+		parent::__construct($this->userManager, $this->groupManager, $this->principalBackend, $this->cacheFactory, $this->service, $this->logger);
 		$this->service->setResourceType('calendar');
 	}
 }
