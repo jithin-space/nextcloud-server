@@ -210,12 +210,17 @@ class AppConfig implements IAppConfig {
 	 * @return array<string, string> [configKey => configValue]
 	 * @since 29.0.0
 	 */
-	public function getAllValues(string $app, string $key = '', bool $filtered = false): array {
-		$this->assertParams($app, $key);
+	public function getAllValues(string $app, string $prefix = '', bool $filtered = false): array {
+		$this->assertParams($app, $prefix);
 		// if we want to filter values, we need to get sensitivity
 		$this->loadConfigAll();
 		// array_merge() will remove numeric keys (here config keys), so addition arrays instead
-		$values = ($this->fastCache[$app] ?? []) + ($this->lazyCache[$app] ?? []);
+		$values = array_filter(
+			(($this->fastCache[$app] ?? []) + ($this->lazyCache[$app] ?? [])),
+			function (string $key) use ($prefix): bool {
+				return str_starts_with($key, $prefix); // filter values based on $prefix
+			}, ARRAY_FILTER_USE_KEY
+		);
 
 		if (!$filtered) {
 			return $values;
@@ -838,10 +843,6 @@ class AppConfig implements IAppConfig {
 		$this->assertParams($app, $key);
 		$this->loadConfigAll();
 		$lazy = $this->isLazy($app, $key);
-
-		if (!$this->hasKey($app, $key, $lazy)) {
-			throw new AppConfigUnknownKeyException('Unknown config key');
-		}
 
 		// type can only be one type
 		if (!in_array($type, [self::VALUE_MIXED, self::VALUE_STRING, self::VALUE_INT, self::VALUE_FLOAT, self::VALUE_BOOL, self::VALUE_ARRAY])) {
