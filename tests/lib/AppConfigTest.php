@@ -718,7 +718,7 @@ class AppConfigTest extends TestCase {
 	public function testSetValueBool(): void {
 		$config = $this->generateAppConfig();
 		$config->setValueBool('feed', 'bool', true);
-		$this->assertSame(true, $config->getValueBool('feed', 'bool', 0));
+		$this->assertSame(true, $config->getValueBool('feed', 'bool', false));
 	}
 
 	public function testSetValueBoolCache(): void {
