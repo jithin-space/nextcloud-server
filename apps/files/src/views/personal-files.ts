@@ -24,11 +24,8 @@ import { View, getNavigation } from '@nextcloud/files'
 
 import { getContents } from '../services/PersonalFiles'
 import AccountIcon from '@mdi/svg/svg/account.svg?raw'
-import logger from '../logger'
 
 export default () => {
-	logger.debug("Loading root level personal files view...")
-	
 	const Navigation = getNavigation()
 	Navigation.register(new View({
 		id: 'personal-files',
