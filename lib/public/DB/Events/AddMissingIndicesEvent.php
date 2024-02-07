@@ -40,7 +40,7 @@ class AddMissingIndicesEvent extends \OCP\EventDispatcher\Event {
 	private array $missingIndices = [];
 
 	/** @var array<array-key, array{tableName: string, oldIndexNames: array, newIndexName: string, columns: string[], uniqueIndex: bool, options: array{}}> */
-	private array $toEditIndices = [];
+	private array $toReplaceIndices = [];
 
 	/**
 	 * @param string[] $columns
@@ -83,8 +83,8 @@ class AddMissingIndicesEvent extends \OCP\EventDispatcher\Event {
 	 * @param string[] $columns
 	 * @since 29.0.0
 	 */
-	public function editIndex(string $tableName, array $oldIndexNames, string $newIndexName, array $columns, bool $unique, array $options = []): void {
-		$this->toEditIndices[] = [
+	public function replaceIndex(string $tableName, array $oldIndexNames, string $newIndexName, array $columns, bool $unique, array $options = []): void {
+		$this->toReplaceIndices[] = [
 			'tableName' => $tableName,
 			'oldIndexNames' => $oldIndexNames,
 			'newIndexName' => $newIndexName,
@@ -98,7 +98,7 @@ class AddMissingIndicesEvent extends \OCP\EventDispatcher\Event {
 	 * @since 29.0.0
 	 * @return array<array-key, array{tableName: string, oldIndexNames: array, newIndexName: string, columns: string[], uniqueIndex: bool, options: array{}}>
 	 */
-	public function toEditIndices(): array {
-		return $this->toEditIndices;
+	public function toReplaceIndices(): array {
+		return $this->toReplaceIndices;
 	}
 }

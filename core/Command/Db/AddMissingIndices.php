@@ -73,9 +73,9 @@ class AddMissingIndices extends Command {
 		$this->dispatcher->dispatchTyped($event);
 
 		$missingIndices = $event->getMissingIndices();
-		$toEditIndices = $event->toEditIndices();
+		$toReplaceIndices = $event->toReplaceIndices();
 
-		if ($missingIndices !== [] || $toEditIndices !== []) {
+		if ($missingIndices !== [] || $toReplaceIndices !== []) {
 			$schema = new SchemaWrapper($this->connection);
 
 			if ($missingIndices !== []) {
@@ -100,9 +100,8 @@ class AddMissingIndices extends Command {
 								$table->addIndex($missingIndex['columns'], $missingIndex['indexName'], [], $missingIndex['options']);
 							}
 
-							$sqlQueries = $this->connection->migrateToSchema($schema->getWrappedSchema(), $dryRun);
-							if ($dryRun && $sqlQueries !== null) {
-								$output->writeln($sqlQueries);
+							if (!$dryRun) {
+								$this->connection->migrateToSchema($schema->getWrappedSchema());
 							}
 							$output->writeln('<info>' . $table->getName() . ' table updated successfully.</info>');
 						}
@@ -110,13 +109,13 @@ class AddMissingIndices extends Command {
 				}
 			}
 
-			if ($toEditIndices !== []) {
-				foreach ($toEditIndices as $toEditIndex) {
-					if ($schema->hasTable($toEditIndex['tableName'])) {
-						$table = $schema->getTable($toEditIndex['tableName']);
+			if ($toReplaceIndices !== []) {
+				foreach ($toReplaceIndices as $toReplaceIndex) {
+					if ($schema->hasTable($toReplaceIndex['tableName'])) {
+						$table = $schema->getTable($toReplaceIndex['tableName']);
 
 						$allOldIndicesExists = true;
-						foreach ($toEditIndex['oldIndexNames'] as $oldIndexName) {
+						foreach ($toReplaceIndex['oldIndexNames'] as $oldIndexName) {
 							if (!$table->hasIndex($oldIndexName)) {
 								$allOldIndicesExists = false;
 							}
@@ -126,25 +125,35 @@ class AddMissingIndices extends Command {
 							continue;
 						}
 
-						foreach ($toEditIndex['oldIndexNames'] as $oldIndexName) {
+						$output->writeln('<info>Adding additional ' . $toReplaceIndex['newIndexName'] . ' index to the ' . $table->getName() . ' table, this can take some time...</info>');
+
+						if ($toReplaceIndex['uniqueIndex']) {
+							$table->addUniqueIndex($toReplaceIndex['columns'], $toReplaceIndex['newIndexName'], $toReplaceIndex['options']);
+						} else {
+							$table->addIndex($toReplaceIndex['columns'], $toReplaceIndex['newIndexName'], [], $toReplaceIndex['options']);
+						}
+
+						if (!$dryRun) {
+							$this->connection->migrateToSchema($schema->getWrappedSchema());
+						}
+
+						foreach ($toReplaceIndex['oldIndexNames'] as $oldIndexName) {
 							$output->writeln('<info>Removing ' . $oldIndexName . ' index from the ' . $table->getName() . ' table</info>');
 							$table->dropIndex($oldIndexName);
 						}
 
-						$output->writeln('<info>Adding additional ' . $toEditIndex['newIndexName'] . ' index to the ' . $table->getName() . ' table, this can take some time...</info>');
-
-						if ($toEditIndex['uniqueIndex']) {
-							$table->addUniqueIndex($toEditIndex['columns'], $toEditIndex['newIndexName'], $toEditIndex['options']);
-						} else {
-							$table->addIndex($toEditIndex['columns'], $toEditIndex['newIndexName'], [], $toEditIndex['options']);
-						}
-
-						$sqlQueries = $this->connection->migrateToSchema($schema->getWrappedSchema(), $dryRun);
-						if ($dryRun && $sqlQueries !== null) {
-							$output->writeln($sqlQueries);
+						if (!$dryRun) {
+							$this->connection->migrateToSchema($schema->getWrappedSchema());
 						}
 						$output->writeln('<info>' . $table->getName() . ' table updated successfully.</info>');
 					}
+				}
+			}
+
+			if ($dryRun) {
+				$sqlQueries = $this->connection->migrateToSchema($schema->getWrappedSchema(), $dryRun);
+				if ($sqlQueries !== null) {
+					$output->writeln($sqlQueries);
 				}
 			}
 		}
