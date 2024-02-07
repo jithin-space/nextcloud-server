@@ -240,7 +240,8 @@ class ShareAPIController extends OCSController {
 
 		$expiration = $share->getExpirationDate();
 		if ($expiration !== null) {
-			$result['expiration'] = $expiration->format('Y-m-d 00:00:00');
+			$expiration->setTimezone($this->dateTimeZone->getTimeZone());
+			$result['expiration'] = $expiration->format('Y-m-d');
 		}
 
 		if ($share->getShareType() === IShare::TYPE_USER) {
@@ -1700,7 +1701,6 @@ class ShareAPIController extends OCSController {
 		}
 
 		$date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
-		$date->setTime(0, 0, 0);
 
 		return $date;
 	}

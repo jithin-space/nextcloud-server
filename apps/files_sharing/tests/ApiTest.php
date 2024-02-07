@@ -124,6 +124,7 @@ class ApiTest extends TestCase {
 		$userStatusManager = $this->createMock(IUserStatusManager::class);
 		$previewManager = $this->createMock(IPreview::class);
 		$dateTimeZone = $this->createMock(IDateTimeZone::class);
+		$dateTimeZone->method('getTimeZone')->willReturn(new \DateTimeZone('UTC'));
 
 		return new ShareAPIController(
 			self::APP_NAME,
@@ -1350,7 +1351,7 @@ class ApiTest extends TestCase {
 
 		$data = $result->getData();
 		$this->assertTrue(is_string($data['token']));
-		$this->assertEquals($date->format('Y-m-d') . ' 00:00:00', $data['expiration']);
+		$this->assertEquals($date->format('Y-m-d'), $data['expiration']);
 
 		// check for correct link
 		$url = \OC::$server->getURLGenerator()->getAbsoluteURL('/index.php/s/' . $data['token']);

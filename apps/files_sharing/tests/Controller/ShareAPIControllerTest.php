@@ -741,7 +741,7 @@ class ShareAPIControllerTest extends TestCase {
 			'file_target' => 'target',
 			'file_parent' => 3,
 			'token' => 'token',
-			'expiration' => '2000-01-02 00:00:00',
+			'expiration' => '2000-01-02',
 			'permissions' => 4,
 			'attributes' => null,
 			'stime' => 5,
@@ -845,6 +845,7 @@ class ShareAPIControllerTest extends TestCase {
 		$this->groupManager->method('get')->willReturnMap([
 			['group', $group],
 		]);
+		$this->dateTimeZone->method('getTimezone')->willReturn(new \DateTimeZone('UTC'));
 
 		$d = $ocs->getShare($share->getId())->getData()[0];
 
@@ -4647,6 +4648,7 @@ class ShareAPIControllerTest extends TestCase {
 		$this->rootFolder->method('getUserFolder')
 			->with($this->currentUser)
 			->willReturnSelf();
+		$this->dateTimeZone->method('getTimezone')->willReturn(new \DateTimeZone('UTC'));
 
 		if (!$exception) {
 			$this->rootFolder->method('getById')

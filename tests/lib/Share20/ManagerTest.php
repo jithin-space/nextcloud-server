@@ -491,7 +491,6 @@ class ManagerTest extends \Test\TestCase {
 			->getMock();
 
 		$date = new \DateTime();
-		$date->setTime(0, 0, 0);
 
 		$share = $this->manager->newShare();
 		$share->setExpirationDate($date)
@@ -934,7 +933,6 @@ class ManagerTest extends \Test\TestCase {
 		}
 
 		$expected = new \DateTime();
-		$expected->setTime(0, 0, 0);
 		$expected->add(new \DateInterval('P3D'));
 
 		self::invokePrivate($this->manager, 'validateExpirationDateInternal', [$share]);
@@ -969,7 +967,6 @@ class ManagerTest extends \Test\TestCase {
 		}
 
 		$expected = new \DateTime();
-		$expected->setTime(0, 0, 0);
 		$expected->add(new \DateInterval('P1D'));
 
 		self::invokePrivate($this->manager, 'validateExpirationDateInternal', [$share]);
@@ -1020,7 +1017,6 @@ class ManagerTest extends \Test\TestCase {
 		$future->setTime(1, 2, 3);
 
 		$expected = clone $future;
-		$expected->setTime(0, 0, 0);
 
 		$share = $this->manager->newShare();
 		$share->setShareType($shareType);
@@ -1062,7 +1058,6 @@ class ManagerTest extends \Test\TestCase {
 		$date->setTime(1, 2, 3);
 
 		$expected = clone $date;
-		$expected->setTime(0, 0, 0);
 
 		$share = $this->manager->newShare();
 		$share->setShareType($shareType);
@@ -1107,7 +1102,6 @@ class ManagerTest extends \Test\TestCase {
 
 		$expected = new \DateTime();
 		$expected->add(new \DateInterval('P3D'));
-		$expected->setTime(0, 0, 0);
 
 		if ($shareType === IShare::TYPE_USER) {
 			$this->config->method('getAppValue')
@@ -1145,7 +1139,6 @@ class ManagerTest extends \Test\TestCase {
 		$future->setTime(1, 2, 3);
 
 		$expected = clone $future;
-		$expected->setTime(0, 0, 0);
 
 		$share = $this->manager->newShare();
 		$share->setShareType($shareType);
@@ -1184,7 +1177,6 @@ class ManagerTest extends \Test\TestCase {
 	public function testValidateExpirationDateInternalHookModification($shareType) {
 		$nextWeek = new \DateTime();
 		$nextWeek->add(new \DateInterval('P7D'));
-		$nextWeek->setTime(0, 0, 0);
 
 		$save = clone $nextWeek;
 
@@ -1213,7 +1205,6 @@ class ManagerTest extends \Test\TestCase {
 
 		$nextWeek = new \DateTime();
 		$nextWeek->add(new \DateInterval('P7D'));
-		$nextWeek->setTime(0, 0, 0);
 
 		$share = $this->manager->newShare();
 		$share->setShareType($shareType);
@@ -1312,7 +1303,6 @@ class ManagerTest extends \Test\TestCase {
 			]);
 
 		$expected = new \DateTime();
-		$expected->setTime(0, 0, 0);
 		$expected->add(new \DateInterval('P3D'));
 
 		self::invokePrivate($this->manager, 'validateExpirationDateLink', [$share]);
@@ -1333,7 +1323,6 @@ class ManagerTest extends \Test\TestCase {
 			]);
 
 		$expected = new \DateTime();
-		$expected->setTime(0, 0, 0);
 		$expected->add(new \DateInterval('P1D'));
 
 		self::invokePrivate($this->manager, 'validateExpirationDateLink', [$share]);
@@ -1368,7 +1357,6 @@ class ManagerTest extends \Test\TestCase {
 		$future->setTime(1, 2, 3);
 
 		$expected = clone $future;
-		$expected->setTime(0, 0, 0);
 
 		$share = $this->manager->newShare();
 		$share->setExpirationDate($future);
@@ -1397,7 +1385,6 @@ class ManagerTest extends \Test\TestCase {
 		$date->setTime(1, 2, 3);
 
 		$expected = clone $date;
-		$expected->setTime(0, 0, 0);
 
 		$share = $this->manager->newShare();
 		$share->setExpirationDate($date);
@@ -1433,7 +1420,6 @@ class ManagerTest extends \Test\TestCase {
 
 		$expected = new \DateTime();
 		$expected->add(new \DateInterval('P3D'));
-		$expected->setTime(0, 0, 0);
 
 		$this->config->method('getAppValue')
 			->willReturnMap([
@@ -1459,7 +1445,6 @@ class ManagerTest extends \Test\TestCase {
 		$future->setTime(1, 2, 3);
 
 		$expected = clone $future;
-		$expected->setTime(0, 0, 0);
 
 		$share = $this->manager->newShare();
 		$share->setExpirationDate($future);
@@ -1485,7 +1470,6 @@ class ManagerTest extends \Test\TestCase {
 	public function testValidateExpirationDateHookModification() {
 		$nextWeek = new \DateTime();
 		$nextWeek->add(new \DateInterval('P7D'));
-		$nextWeek->setTime(0, 0, 0);
 
 		$save = clone $nextWeek;
 
@@ -1510,7 +1494,6 @@ class ManagerTest extends \Test\TestCase {
 
 		$nextWeek = new \DateTime();
 		$nextWeek->add(new \DateInterval('P7D'));
-		$nextWeek->setTime(0, 0, 0);
 
 		$share = $this->manager->newShare();
 		$share->setExpirationDate($nextWeek);
@@ -2684,7 +2667,6 @@ class ManagerTest extends \Test\TestCase {
 		}
 
 		$today = new \DateTime();
-		$today->setTime(0, 0, 0);
 
 		/*
 		 * Set the expiration date to today for some shares
@@ -2918,7 +2900,6 @@ class ManagerTest extends \Test\TestCase {
 			->getMock();
 
 		$date = new \DateTime();
-		$date->setTime(0, 0, 0);
 		$date->add(new \DateInterval('P2D'));
 		$share = $this->manager->newShare();
 		$share->setExpirationDate($date);
@@ -2971,7 +2952,6 @@ class ManagerTest extends \Test\TestCase {
 			->getMock();
 
 		$date = new \DateTime();
-		$date->setTime(0, 0, 0);
 		$share = $this->manager->newShare();
 		$share->setExpirationDate($date);
 
@@ -2997,7 +2977,6 @@ class ManagerTest extends \Test\TestCase {
 			]);
 
 		$date = new \DateTime();
-		$date->setTime(0, 0, 0);
 		$date->add(new \DateInterval('P2D'));
 		$share = $this->manager->newShare();
 		$share->setExpirationDate($date);
@@ -3322,7 +3301,6 @@ class ManagerTest extends \Test\TestCase {
 			->setPermissions(15);
 
 		$tomorrow = new \DateTime();
-		$tomorrow->setTime(0, 0, 0);
 		$tomorrow->add(new \DateInterval('P1D'));
 
 		$file = $this->createMock(File::class);
@@ -3403,7 +3381,6 @@ class ManagerTest extends \Test\TestCase {
 			->setPermissions(15);
 
 		$tomorrow = new \DateTime();
-		$tomorrow->setTime(0, 0, 0);
 		$tomorrow->add(new \DateInterval('P1D'));
 
 		$file = $this->createMock(File::class);
@@ -3469,7 +3446,6 @@ class ManagerTest extends \Test\TestCase {
 			->setPermissions(\OCP\Constants::PERMISSION_ALL);
 
 		$tomorrow = new \DateTime();
-		$tomorrow->setTime(0, 0, 0);
 		$tomorrow->add(new \DateInterval('P1D'));
 
 		$file = $this->createMock(File::class);
@@ -3551,7 +3527,6 @@ class ManagerTest extends \Test\TestCase {
 			->setSendPasswordByTalk(false);
 
 		$tomorrow = new \DateTime();
-		$tomorrow->setTime(0, 0, 0);
 		$tomorrow->add(new \DateInterval('P1D'));
 
 		$file = $this->createMock(File::class);
@@ -3634,7 +3609,6 @@ class ManagerTest extends \Test\TestCase {
 			->setSendPasswordByTalk(false);
 
 		$tomorrow = new \DateTime();
-		$tomorrow->setTime(0, 0, 0);
 		$tomorrow->add(new \DateInterval('P1D'));
 
 		$file = $this->createMock(File::class);
@@ -3725,7 +3699,6 @@ class ManagerTest extends \Test\TestCase {
 			->setSendPasswordByTalk(false);
 
 		$tomorrow = new \DateTime();
-		$tomorrow->setTime(0, 0, 0);
 		$tomorrow->add(new \DateInterval('P1D'));
 
 		$file = $this->createMock(File::class);
@@ -3798,7 +3771,6 @@ class ManagerTest extends \Test\TestCase {
 			->setSendPasswordByTalk(false);
 
 		$tomorrow = new \DateTime();
-		$tomorrow->setTime(0, 0, 0);
 		$tomorrow->add(new \DateInterval('P1D'));
 
 		$file = $this->createMock(File::class);
@@ -3871,7 +3843,6 @@ class ManagerTest extends \Test\TestCase {
 			->setSendPasswordByTalk(false);
 
 		$tomorrow = new \DateTime();
-		$tomorrow->setTime(0, 0, 0);
 		$tomorrow->add(new \DateInterval('P1D'));
 
 		$file = $this->createMock(File::class);
@@ -3944,7 +3915,6 @@ class ManagerTest extends \Test\TestCase {
 			->setSendPasswordByTalk(false);
 
 		$tomorrow = new \DateTime();
-		$tomorrow->setTime(0, 0, 0);
 		$tomorrow->add(new \DateInterval('P1D'));
 
 		$file = $this->createMock(File::class);
@@ -4018,7 +3988,6 @@ class ManagerTest extends \Test\TestCase {
 			->setSendPasswordByTalk(true);
 
 		$tomorrow = new \DateTime();
-		$tomorrow->setTime(0, 0, 0);
 		$tomorrow->add(new \DateInterval('P1D'));
 
 		$file = $this->createMock(File::class);
@@ -4092,7 +4061,6 @@ class ManagerTest extends \Test\TestCase {
 			->setSendPasswordByTalk(true);
 
 		$tomorrow = new \DateTime();
-		$tomorrow->setTime(0, 0, 0);
 		$tomorrow->add(new \DateInterval('P1D'));
 
 		$file = $this->createMock(File::class);
