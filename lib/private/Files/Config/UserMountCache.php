@@ -371,14 +371,14 @@ class UserMountCache implements IUserMountCache {
 		}
 		$mountsForStorage = $this->getMountsForStorageId($storageId, $user);
 
-		// filter mounts that are from the same storage but a different directory
+		// filter mounts that are from the same storage but not a parent of the file we care about
 		$filteredMounts = array_filter($mountsForStorage, function (ICachedMountInfo $mount) use ($internalPath, $fileId) {
 			if ($fileId === $mount->getRootId()) {
 				return true;
 			}
 			$internalMountPath = $mount->getRootInternalPath();
 
-			return $internalMountPath === '' || substr($internalPath, 0, strlen($internalMountPath) + 1) === $internalMountPath . '/';
+			return $internalMountPath === '' || str_starts_with($internalPath, $internalMountPath . '/');
 		});
 
 		return array_map(function (ICachedMountInfo $mount) use ($internalPath) {
