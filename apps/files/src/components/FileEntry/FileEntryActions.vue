@@ -53,6 +53,7 @@
 				:close-after-click="!isMenu(action.id)"
 				:data-cy-files-list-row-action="action.id"
 				:is-menu="isMenu(action.id)"
+				:aria-label="mountType === 'shared' && action.id === 'sharing-status' ? action.title([source]) : actionDisplayName(action)"
 				:title="action.title?.([source], currentView)"
 				@click="onActionClick(action)">
 				<template #icon>
