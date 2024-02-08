@@ -80,6 +80,8 @@ class ServerDevNotice implements ISettings {
 
 		// If the Reasons to use Nextcloud.pdf file is here, let's init Viewer, also check that Viewer is there
 		if (class_exists(LoadViewer::class) && $userFolder->nodeExists('Reasons to use Nextcloud.pdf')) {
+			// Make a zero-cost assertion in order to fix Psalm
+			assert(class_exists(LoadViewer::class));
 			$this->eventDispatcher->dispatch(LoadViewer::class, new LoadViewer());
 			$hasInitialState = true;
 		}
